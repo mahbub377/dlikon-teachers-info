@@ -7,10 +7,14 @@ import {
   Sparkles, 
   Save, 
   RotateCcw,
-  CheckCircle2
+  CheckCircle2,
+  LogIn,
+  LogOut,
+  User as UserIcon
 } from 'lucide-react';
 import { SchoolLogo } from './SchoolLogo';
 import { ActiveTab } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -33,6 +37,8 @@ export const Header: React.FC<HeaderProps> = ({
   savedCount,
   isSavedNotification = false
 }) => {
+  const { currentUser, signInWithGoogle, signOut, loading } = useAuth();
+
   return (
     <header className="no-print sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -102,11 +108,49 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="btn-print-action"
               onClick={onPrint}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition-colors shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition-colors shadow-xs cursor-pointer"
             >
               <Printer className="w-4 h-4 text-teal-300" />
               প্রিন্ট (A4)
             </button>
+
+            {/* Google Sign In / User Status */}
+            {!loading && (
+              currentUser ? (
+                <div className="flex items-center gap-1.5 pl-1 border-l border-slate-200">
+                  {currentUser.photoURL ? (
+                    <img 
+                      src={currentUser.photoURL} 
+                      alt={currentUser.displayName || 'User'} 
+                      className="w-7 h-7 rounded-full border border-teal-600 object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-teal-100 text-teal-800 flex items-center justify-center text-xs font-bold">
+                      {currentUser.displayName ? currentUser.displayName.charAt(0) : <UserIcon className="w-3.5 h-3.5" />}
+                    </div>
+                  )}
+                  <button
+                    id="btn-sign-out"
+                    onClick={() => signOut()}
+                    title="লগ আউট করুন"
+                    className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  id="btn-google-sign-in"
+                  onClick={() => signInWithGoogle()}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg shadow-2xs transition-colors cursor-pointer"
+                  title="গুগল দিয়ে সাইন ইন করুন"
+                >
+                  <LogIn className="w-3.5 h-3.5 text-teal-700" />
+                  <span className="hidden sm:inline">সাইন ইন</span>
+                </button>
+              )
+            )}
           </div>
         </div>
 

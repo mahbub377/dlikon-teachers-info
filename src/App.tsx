@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { TeacherFormEditor } from './components/TeacherFormEditor';
 import { PrintableTwoPageForm } from './components/PrintableTwoPageForm';
@@ -6,12 +6,16 @@ import { TeacherIdCard } from './components/TeacherIdCard';
 import { TeacherDirectory } from './components/TeacherDirectory';
 import { TeacherFormData, ActiveTab } from './types';
 import { sampleTeacherData, createEmptyTeacher } from './data/sampleData';
+import { fetchTeachersFromDb, saveTeacherToDb, deleteTeacherFromDb } from './services/teacherApi';
+import { useAuth } from './context/AuthContext';
 
 const STORAGE_KEY_CURRENT = 'dlma_current_form_v1';
 const STORAGE_KEY_LIST = 'dlma_teachers_directory_v1';
 
 export default function App() {
+  const { getToken } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>('form');
+  
   const [formData, setFormData] = useState<TeacherFormData>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_CURRENT);
@@ -36,11 +40,31 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
-    // Seed with initial sample teacher
     return [sampleTeacherData];
   });
 
   const [isSavedNotification, setIsSavedNotification] = useState(false);
+
+  // Sync teachers from database
+  const loadTeachers = useCallback(async () => {
+    try {
+      const token = await getToken();
+      const dbTeachers = await fetchTeachersFromDb(token);
+      if (dbTeachers && dbTeachers.length > 0) {
+        setSavedTeachers(dbTeachers);
+        localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(dbTeachers));
+      } else {
+        // If DB is brand new, seed the sample teacher to DB
+        await saveTeacherToDb(sampleTeacherData, token).catch(() => {});
+      }
+    } catch (err) {
+      console.warn('Using local cached teacher list:', err);
+    }
+  }, [getToken]);
+
+  useEffect(() => {
+    loadTeachers();
+  }, [loadTeachers]);
 
   // Sync current form state to localStorage
   useEffect(() => {
@@ -51,29 +75,31 @@ export default function App() {
     }
   }, [formData]);
 
-  // Sync saved list to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(savedTeachers));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [savedTeachers]);
-
-  // Save current form into directory
-  const handleSaveTeacher = () => {
-    const existingIndex = savedTeachers.findIndex(t => t.id === formData.id);
-    const updatedForm = {
+  // Save current form into database and directory
+  const handleSaveTeacher = async () => {
+    const updatedForm: TeacherFormData = {
       ...formData,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
+    // Optimistic local update
+    const existingIndex = savedTeachers.findIndex(t => t.id === updatedForm.id);
+    let newSavedList: TeacherFormData[];
     if (existingIndex >= 0) {
-      const updated = [...savedTeachers];
-      updated[existingIndex] = updatedForm;
-      setSavedTeachers(updated);
+      newSavedList = [...savedTeachers];
+      newSavedList[existingIndex] = updatedForm;
     } else {
-      setSavedTeachers(prev => [updatedForm, ...prev]);
+      newSavedList = [updatedForm, ...savedTeachers];
+    }
+    setSavedTeachers(newSavedList);
+    localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(newSavedList));
+
+    // Persist to Cloud SQL database
+    try {
+      const token = await getToken();
+      await saveTeacherToDb(updatedForm, token);
+    } catch (err) {
+      console.error('Error persisting to database:', err);
     }
 
     setIsSavedNotification(true);
@@ -87,7 +113,7 @@ export default function App() {
     setFormData({
       ...sampleTeacherData,
       id: 'tch_' + Date.now(),
-      teacherId: 'DLMA-' + Math.floor(1000 + Math.random() * 9000)
+      teacherId: 'DLMA-' + Math.floor(1000 + Math.random() * 9000),
     });
   };
 
@@ -124,17 +150,38 @@ export default function App() {
   };
 
   // Delete teacher
-  const handleDeleteTeacher = (id: string) => {
-    setSavedTeachers(prev => prev.filter(t => t.id !== id));
+  const handleDeleteTeacher = async (id: string) => {
+    const updated = savedTeachers.filter(t => t.id !== id);
+    setSavedTeachers(updated);
+    localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(updated));
+
+    try {
+      const token = await getToken();
+      await deleteTeacherFromDb(id, token);
+    } catch (err) {
+      console.error('Error deleting teacher from database:', err);
+    }
   };
 
   // Import backup
-  const handleImportBackup = (imported: TeacherFormData[]) => {
+  const handleImportBackup = async (imported: TeacherFormData[]) => {
     setSavedTeachers(imported);
+    localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(imported));
     if (imported.length > 0) {
       setFormData(imported[0]);
     }
-    alert(`সফলভাবে ${imported.length} জন শিক্ষকের তথ্য রিস্টোর করা হয়েছে!`);
+
+    // Persist imported to Cloud SQL
+    try {
+      const token = await getToken();
+      for (const t of imported) {
+        await saveTeacherToDb(t, token).catch(() => {});
+      }
+    } catch (err) {
+      console.error('Error importing teachers to database:', err);
+    }
+
+    alert(`সফলভাবে ${imported.length} জন শিক্ষকের তথ্য রিস্টোর ও ডেটাবেজে সংরক্ষিত হয়েছে!`);
   };
 
   return (
