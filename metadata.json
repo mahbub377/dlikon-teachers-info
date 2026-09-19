@@ -1,0 +1,6 @@
+{
+  "name": "ডি-লিকন মডেল একাডেমী - শিক্ষক তথ্য ফরম",
+  "description": "ডি-লিকন মডেল একাডেমীর শিক্ষকদের ডিজিটাল তথ্য সংগ্রহ ফরম, ২-পাতার A4 প্রিন্ট ও শিক্ষক ডেটাবেজ ম্যানেজমেন্ট সিস্টেম।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

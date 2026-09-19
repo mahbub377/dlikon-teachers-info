@@ -1,0 +1,213 @@
+import React, { useState, useEffect } from 'react';
+import { Header } from './components/Header';
+import { TeacherFormEditor } from './components/TeacherFormEditor';
+import { PrintableTwoPageForm } from './components/PrintableTwoPageForm';
+import { TeacherIdCard } from './components/TeacherIdCard';
+import { TeacherDirectory } from './components/TeacherDirectory';
+import { TeacherFormData, ActiveTab } from './types';
+import { sampleTeacherData, createEmptyTeacher } from './data/sampleData';
+
+const STORAGE_KEY_CURRENT = 'dlma_current_form_v1';
+const STORAGE_KEY_LIST = 'dlma_teachers_directory_v1';
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState<ActiveTab>('form');
+  const [formData, setFormData] = useState<TeacherFormData>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_CURRENT);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return sampleTeacherData;
+  });
+
+  const [savedTeachers, setSavedTeachers] = useState<TeacherFormData[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_LIST);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    // Seed with initial sample teacher
+    return [sampleTeacherData];
+  });
+
+  const [isSavedNotification, setIsSavedNotification] = useState(false);
+
+  // Sync current form state to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_CURRENT, JSON.stringify(formData));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [formData]);
+
+  // Sync saved list to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(savedTeachers));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [savedTeachers]);
+
+  // Save current form into directory
+  const handleSaveTeacher = () => {
+    const existingIndex = savedTeachers.findIndex(t => t.id === formData.id);
+    const updatedForm = {
+      ...formData,
+      updatedAt: new Date().toISOString()
+    };
+
+    if (existingIndex >= 0) {
+      const updated = [...savedTeachers];
+      updated[existingIndex] = updatedForm;
+      setSavedTeachers(updated);
+    } else {
+      setSavedTeachers(prev => [updatedForm, ...prev]);
+    }
+
+    setIsSavedNotification(true);
+    setTimeout(() => {
+      setIsSavedNotification(false);
+    }, 2500);
+  };
+
+  // Load sample teacher data
+  const handleLoadSample = () => {
+    setFormData({
+      ...sampleTeacherData,
+      id: 'tch_' + Date.now(),
+      teacherId: 'DLMA-' + Math.floor(1000 + Math.random() * 9000)
+    });
+  };
+
+  // Reset form to blank
+  const handleResetForm = () => {
+    if (confirm('আপনি কি নিশ্চিত যে নতুন একটি খালি ফরম চালু করতে চান? বর্তমান অসংরক্ষিত তথ্য মুছে যাবে।')) {
+      setFormData(createEmptyTeacher());
+      setActiveTab('form');
+    }
+  };
+
+  // Direct print trigger
+  const handlePrint = () => {
+    if (activeTab !== 'preview' && activeTab !== 'idcard') {
+      setActiveTab('preview');
+      setTimeout(() => {
+        window.print();
+      }, 350);
+    } else {
+      window.print();
+    }
+  };
+
+  // Select teacher from directory
+  const handleSelectTeacher = (teacher: TeacherFormData) => {
+    setFormData(teacher);
+    setActiveTab('form');
+  };
+
+  // Switch to preview with specific teacher
+  const handleSwitchToPreview = (teacher: TeacherFormData) => {
+    setFormData(teacher);
+    setActiveTab('preview');
+  };
+
+  // Delete teacher
+  const handleDeleteTeacher = (id: string) => {
+    setSavedTeachers(prev => prev.filter(t => t.id !== id));
+  };
+
+  // Import backup
+  const handleImportBackup = (imported: TeacherFormData[]) => {
+    setSavedTeachers(imported);
+    if (imported.length > 0) {
+      setFormData(imported[0]);
+    }
+    alert(`সফলভাবে ${imported.length} জন শিক্ষকের তথ্য রিস্টোর করা হয়েছে!`);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-100/70 text-slate-800 flex flex-col selection:bg-teal-200 selection:text-teal-900">
+      {/* Top Header & Navigation */}
+      <Header
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onLoadSample={handleLoadSample}
+        onReset={handleResetForm}
+        onSave={handleSaveTeacher}
+        onPrint={handlePrint}
+        savedCount={savedTeachers.length}
+        isSavedNotification={isSavedNotification}
+      />
+
+      {/* Main Content Area */}
+      <main className="flex-1 w-full">
+        {activeTab === 'form' && (
+          <TeacherFormEditor
+            formData={formData}
+            setFormData={setFormData}
+            onViewPreview={() => setActiveTab('preview')}
+            onSave={handleSaveTeacher}
+            onLoadSample={handleLoadSample}
+          />
+        )}
+
+        {activeTab === 'preview' && (
+          <PrintableTwoPageForm
+            formData={formData}
+            onEdit={() => setActiveTab('form')}
+            onPrint={handlePrint}
+            onLoadSample={handleLoadSample}
+          />
+        )}
+
+        {activeTab === 'idcard' && (
+          <TeacherIdCard
+            formData={formData}
+            onEdit={() => setActiveTab('form')}
+            onPrint={handlePrint}
+            onLoadSample={handleLoadSample}
+          />
+        )}
+
+        {activeTab === 'list' && (
+          <TeacherDirectory
+            savedTeachers={savedTeachers}
+            onSelectTeacher={handleSelectTeacher}
+            onDeleteTeacher={handleDeleteTeacher}
+            onAddNew={() => {
+              setFormData(createEmptyTeacher());
+              setActiveTab('form');
+            }}
+            onImportBackup={handleImportBackup}
+            onLoadSample={handleLoadSample}
+            onSwitchToPreview={handleSwitchToPreview}
+          />
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="no-print mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>
+            © {new Date().getFullYear()} <strong>ডি-লিকন মডেল একাডেমী</strong> — সর্বস্বত্ব সংরক্ষিত।
+          </span>
+          <span className="text-slate-400">
+            শিক্ষক তথ্য সংগ্রহ ও ডিজিটাল ফরম সংস্করণ ২.০
+          </span>
+        </div>
+      </footer>
+    </div>
+  );
+}
