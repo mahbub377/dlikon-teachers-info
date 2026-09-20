@@ -9,7 +9,8 @@ import {
   Target,
   Award,
   Users,
-  CalendarCheck
+  CalendarCheck,
+  ShieldAlert
 } from 'lucide-react';
 import { SchoolLogo } from './SchoolLogo';
 import { ActiveTab } from '../types';
@@ -97,13 +98,22 @@ export const InspirationalHome: React.FC<InspirationalHomeProps> = ({ onNavigate
         {/* Action Shortcuts */}
         <div className="flex flex-wrap items-center justify-center gap-3 w-full">
           <button
+            id="home-btn-admin-dashboard"
+            onClick={() => onNavigate('admin_dashboard')}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/25 transition-all cursor-pointer hover:scale-105 active:scale-95 border-2 border-amber-300"
+          >
+            <ShieldAlert className="w-5 h-5 text-slate-950" />
+            এডমিন ড্যাশবোর্ড (সিলেবাস ও এক্সেল আপলোড)
+            <ArrowRight className="w-4 h-4" />
+          </button>
+
+          <button
             id="home-btn-register"
             onClick={() => onNavigate('registration')}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/25 transition-all cursor-pointer hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-amber-200 border border-amber-400/30 font-medium text-sm transition-all cursor-pointer hover:border-amber-400/60"
           >
             <GraduationCap className="w-4 h-4" />
             শিক্ষক নিবন্ধন ফরম
-            <ArrowRight className="w-4 h-4" />
           </button>
 
           <button

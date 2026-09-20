@@ -15,7 +15,9 @@ import {
   FolderOpen,
   ChevronRight,
   LogOut,
-  LogIn
+  LogIn,
+  ShieldAlert,
+  FileSpreadsheet
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { SchoolLogo } from './SchoolLogo';
@@ -52,6 +54,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       subLabel: 'ডিজিটাল শিক্ষক তথ্য ফরম ও বায়োডাটা',
       icon: UserPlus,
       color: 'text-teal-600 bg-teal-50',
+    },
+    {
+      id: 'admin_dashboard',
+      label: 'এডমিন ড্যাশবোর্ড',
+      subLabel: 'শিক্ষার্থী এক্সেল আপলোড ও ১১ ধাপের সিলেবাস',
+      icon: ShieldAlert,
+      color: 'text-amber-600 bg-amber-50',
+      badge: 'নতুন',
     },
     {
       id: 'teachers_tools',
@@ -182,10 +192,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* 8 Primary Modules List */}
+        {/* Primary Modules List */}
         <div className="flex-1 overflow-y-auto p-3 space-y-1 scrollbar-thin">
           <div className="px-3 py-1.5 text-[10.5px] font-bold tracking-wider uppercase text-slate-400">
-            শিক্ষক কর্মসহায়ক মডিউলসমূহ
+            শিক্ষক ও একাডেমি মডিউলসমূহ
           </div>
 
           {menuItems.map((item) => {
@@ -214,7 +224,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       {item.label}
                     </span>
                     {item.badge && (
-                      <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-rose-500 text-white shrink-0">
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold text-white shrink-0 ${
+                        item.badge === 'নতুন' ? 'bg-amber-500 text-slate-950' : 'bg-rose-500'
+                      }`}>
                         {item.badge}
                       </span>
                     )}

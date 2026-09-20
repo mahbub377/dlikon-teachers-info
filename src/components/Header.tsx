@@ -8,7 +8,9 @@ import {
   CheckCircle2,
   Printer,
   Home,
-  UserPlus
+  UserPlus,
+  ShieldAlert,
+  BookOpen
 } from 'lucide-react';
 import { SchoolLogo } from './SchoolLogo';
 import { ActiveTab } from '../types';
@@ -94,6 +96,21 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden md:inline">হোম</span>
             </button>
 
+            {/* DIRECT ACCESS: এডমিন ড্যাশবোর্ড (সিলেবাস ও এক্সেল) */}
+            <button
+              id="btn-admin-dashboard"
+              onClick={() => setActiveTab('admin_dashboard')}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs border ${
+                activeTab === 'admin_dashboard'
+                  ? 'bg-amber-600 text-white border-amber-700 ring-2 ring-amber-400'
+                  : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300'
+              }`}
+              title="সিলেবাস আপডেট ও শিক্ষার্থী এক্সেল আপলোড ড্যাশবোর্ড"
+            >
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-700" />
+              <span>এডমিন ড্যাশবোর্ড (সিলেবাস)</span>
+            </button>
+
             {activeTab === 'registration' && (
               <>
                 <button
@@ -160,7 +177,7 @@ export const Header: React.FC<HeaderProps> = ({
               প্রিন্ট
             </button>
 
-            {/* Right 3-Dot Button for the New Action Sidebar */}
+            {/* Right 3-Dot Button for the Action Sidebar */}
             <button
               id="btn-right-sidebar-toggle"
               onClick={onToggleRightSidebar}

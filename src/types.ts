@@ -93,6 +93,7 @@ export interface TeacherFormData {
 export type ActiveTab = 
   | 'home'
   | 'registration' // ১। শিক্ষক নিবন্ধন
+  | 'admin_dashboard' // এডমিন ড্যাশবোর্ড (এক্সেল শিক্ষার্থী আপলোড ও ১১ ধাপের সিলেবাস)
   | 'teachers_tools' // ২। টিচারস টুল
   | 'session_plan' // ৩। সেশন প্লান
   | 'weak_students' // ৪। আজকের দুর্বল শিক্ষার্থী

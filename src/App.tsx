@@ -3,6 +3,7 @@ import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { RightSidebar } from './components/RightSidebar';
 import { InspirationalHome } from './components/InspirationalHome';
+import { AdminDashboard } from './components/AdminDashboard';
 import { ModulePlaceholder } from './components/ModulePlaceholder';
 import { TeacherFormEditor } from './components/TeacherFormEditor';
 import { PrintableTwoPageForm } from './components/PrintableTwoPageForm';
@@ -23,6 +24,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   
+  // Initialize registration form as empty (খালি ফরম) by user request
   const [formData, setFormData] = useState<TeacherFormData>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_CURRENT);
@@ -32,7 +34,7 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
-    return sampleTeacherData;
+    return createEmptyTeacher();
   });
 
   const [savedTeachers, setSavedTeachers] = useState<TeacherFormData[]>(() => {
@@ -201,10 +203,11 @@ export default function App() {
         savedCount={savedTeachers.length}
       />
 
-      {/* 3-dot collapsible Right Sidebar (অপারগ পড়া, সেশন প্লান, একটিভিটি, ইনোভেটিভ, প্রতিযোগিতা) */}
+      {/* 3-dot collapsible Right Sidebar */}
       <RightSidebar
         isOpen={isRightSidebarOpen}
         onClose={() => setIsRightSidebarOpen(false)}
+        onNavigateToAdmin={() => setActiveTab('admin_dashboard')}
       />
 
       {/* Top Header & Navigation with hamburger menu and three-dot buttons */}
@@ -231,7 +234,7 @@ export default function App() {
           />
         )}
 
-        {/* ১। শিক্ষক নিবন্ধন */}
+        {/* ১। শিক্ষক নিবন্ধন (খালি ফরম) */}
         {activeTab === 'registration' && (
           <TeacherFormEditor
             formData={formData}
@@ -240,6 +243,11 @@ export default function App() {
             onSave={handleSaveTeacher}
             onLoadSample={handleLoadSample}
           />
+        )}
+
+        {/* এডমিন ড্যাশবোর্ড: এক্সেল শিক্ষার্থী আপলোড ও ১১ ধাপের সিলেবাস */}
+        {activeTab === 'admin_dashboard' && (
+          <AdminDashboard />
         )}
 
         {/* ২। টিচারস টুল */}

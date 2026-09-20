@@ -4,6 +4,7 @@ import {
   ChevronRight, 
   UserX, 
   BookOpenCheck, 
+  BookOpen,
   Flame, 
   Lightbulb, 
   Trophy, 
@@ -27,9 +28,10 @@ import {
 interface RightSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  onNavigateToAdmin?: () => void;
 }
 
-export const RightSidebar: React.FC<RightSidebarProps> = ({ isOpen, onClose }) => {
+export const RightSidebar: React.FC<RightSidebarProps> = ({ isOpen, onClose, onNavigateToAdmin }) => {
   // Navigation inside the Right Sidebar (5 modules)
   const [activeMenu, setActiveMenu] = useState<1 | 2 | 3 | 4 | 5>(1);
 
@@ -274,6 +276,25 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ isOpen, onClose }) =
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Quick Link to Admin Dashboard */}
+        {onNavigateToAdmin && (
+          <div className="bg-slate-900 px-3 py-2 border-b border-slate-800 flex items-center justify-between">
+            <span className="text-[11px] text-amber-300 font-semibold flex items-center gap-1.5">
+              <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+              সিলেবাস বা এক্সেল শিক্ষার্থী আপলোড করতে চান?
+            </span>
+            <button
+              onClick={() => {
+                onClose();
+                onNavigateToAdmin();
+              }}
+              className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-bold rounded-md shadow-xs transition-colors cursor-pointer"
+            >
+              এডমিন ড্যাশবোর্ড খুলুন
+            </button>
+          </div>
+        )}
 
         {/* 5 Tab Selector Buttons */}
         <div className="bg-amber-50/70 border-b border-amber-200/80 p-1.5 flex gap-1 overflow-x-auto scrollbar-none">
