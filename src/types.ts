@@ -90,4 +90,16 @@ export interface TeacherFormData {
   updatedAt: string;
 }
 
-export type ActiveTab = 'form' | 'preview' | 'list' | 'idcard';
+export type ActiveTab = 
+  | 'home'
+  | 'registration' // ১। শিক্ষক নিবন্ধন
+  | 'teachers_tools' // ২। টিচারস টুল
+  | 'session_plan' // ৩। সেশন প্লান
+  | 'weak_students' // ৪। আজকের দুর্বল শিক্ষার্থী
+  | 'question_maker' // ৫। প্রশ্ন মেকার
+  | 'note_maker' // ৬। নোট মেকার
+  | 'notice_board' // ৭। নোটিশ বোর্ড
+  | 'todays_class' // ৮। আজকের ক্লাস
+  | 'preview' // প্রিভিউ / প্রিন্ট
+  | 'idcard' // আইডি কার্ড
+  | 'list'; // সংরক্ষিত শিক্ষক তালিকা

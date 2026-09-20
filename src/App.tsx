@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
+import { Sidebar } from './components/Sidebar';
+import { RightSidebar } from './components/RightSidebar';
+import { InspirationalHome } from './components/InspirationalHome';
+import { ModulePlaceholder } from './components/ModulePlaceholder';
 import { TeacherFormEditor } from './components/TeacherFormEditor';
 import { PrintableTwoPageForm } from './components/PrintableTwoPageForm';
 import { TeacherIdCard } from './components/TeacherIdCard';
@@ -14,7 +18,10 @@ const STORAGE_KEY_LIST = 'dlma_teachers_directory_v1';
 
 export default function App() {
   const { getToken } = useAuth();
-  const [activeTab, setActiveTab] = useState<ActiveTab>('form');
+  // Default view is Home with inspirational radiance from DLMA logo
+  const [activeTab, setActiveTab] = useState<ActiveTab>('home');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   
   const [formData, setFormData] = useState<TeacherFormData>(() => {
     try {
@@ -121,7 +128,7 @@ export default function App() {
   const handleResetForm = () => {
     if (confirm('আপনি কি নিশ্চিত যে নতুন একটি খালি ফরম চালু করতে চান? বর্তমান অসংরক্ষিত তথ্য মুছে যাবে।')) {
       setFormData(createEmptyTeacher());
-      setActiveTab('form');
+      setActiveTab('registration');
     }
   };
 
@@ -140,7 +147,7 @@ export default function App() {
   // Select teacher from directory
   const handleSelectTeacher = (teacher: TeacherFormData) => {
     setFormData(teacher);
-    setActiveTab('form');
+    setActiveTab('registration');
   };
 
   // Switch to preview with specific teacher
@@ -171,7 +178,6 @@ export default function App() {
       setFormData(imported[0]);
     }
 
-    // Persist imported to Cloud SQL
     try {
       const token = await getToken();
       for (const t of imported) {
@@ -185,11 +191,28 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100/70 text-slate-800 flex flex-col selection:bg-teal-200 selection:text-teal-900">
-      {/* Top Header & Navigation */}
+    <div className="min-h-screen bg-slate-100/70 text-slate-800 flex flex-col selection:bg-amber-200 selection:text-amber-950">
+      {/* 3-line collapsible Left Sidebar */}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        savedCount={savedTeachers.length}
+      />
+
+      {/* 3-dot collapsible Right Sidebar (অপারগ পড়া, সেশন প্লান, একটিভিটি, ইনোভেটিভ, প্রতিযোগিতা) */}
+      <RightSidebar
+        isOpen={isRightSidebarOpen}
+        onClose={() => setIsRightSidebarOpen(false)}
+      />
+
+      {/* Top Header & Navigation with hamburger menu and three-dot buttons */}
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        onToggleSidebar={() => setIsSidebarOpen(true)}
+        onToggleRightSidebar={() => setIsRightSidebarOpen(true)}
         onLoadSample={handleLoadSample}
         onReset={handleResetForm}
         onSave={handleSaveTeacher}
@@ -200,7 +223,16 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 w-full">
-        {activeTab === 'form' && (
+        {activeTab === 'home' && (
+          <InspirationalHome
+            onNavigate={(tab) => {
+              setActiveTab(tab);
+            }}
+          />
+        )}
+
+        {/* ১। শিক্ষক নিবন্ধন */}
+        {activeTab === 'registration' && (
           <TeacherFormEditor
             formData={formData}
             setFormData={setFormData}
@@ -210,24 +242,62 @@ export default function App() {
           />
         )}
 
+        {/* ২। টিচারস টুল */}
+        {activeTab === 'teachers_tools' && (
+          <ModulePlaceholder module="teachers_tools" title="২। টিচারস টুল ও সহায়িকা" />
+        )}
+
+        {/* ৩। সেশন প্লান */}
+        {activeTab === 'session_plan' && (
+          <ModulePlaceholder module="session_plan" title="৩। সেশন ও লেসন প্লান" />
+        )}
+
+        {/* ৪। আজকের দুর্বল শিক্ষার্থী */}
+        {activeTab === 'weak_students' && (
+          <ModulePlaceholder module="weak_students" title="৪। আজকের দুর্বল শিক্ষার্থী ট্র্যাকার" />
+        )}
+
+        {/* ৫। প্রশ্ন মেকার */}
+        {activeTab === 'question_maker' && (
+          <ModulePlaceholder module="question_maker" title="৫। প্রশ্ন মেকার ও প্রিন্টার" />
+        )}
+
+        {/* ৬। নোট মেকার */}
+        {activeTab === 'note_maker' && (
+          <ModulePlaceholder module="note_maker" title="৬। নোট মেকার ও শিক্ষক ডায়েরি" />
+        )}
+
+        {/* ৭। নোটিশ বোর্ড */}
+        {activeTab === 'notice_board' && (
+          <ModulePlaceholder module="notice_board" title="৭। অভ্যন্তরীণ নোটিশ বোর্ড" />
+        )}
+
+        {/* ৮। আজকের ক্লাস */}
+        {activeTab === 'todays_class' && (
+          <ModulePlaceholder module="todays_class" title="৮। আজকের ক্লাস ও সময়সূচী" />
+        )}
+
+        {/* প্রিভিউ ও ২ পাতা A4 প্রিন্ট */}
         {activeTab === 'preview' && (
           <PrintableTwoPageForm
             formData={formData}
-            onEdit={() => setActiveTab('form')}
+            onEdit={() => setActiveTab('registration')}
             onPrint={handlePrint}
             onLoadSample={handleLoadSample}
           />
         )}
 
+        {/* আইডি কার্ড */}
         {activeTab === 'idcard' && (
           <TeacherIdCard
             formData={formData}
-            onEdit={() => setActiveTab('form')}
+            onEdit={() => setActiveTab('registration')}
             onPrint={handlePrint}
             onLoadSample={handleLoadSample}
           />
         )}
 
+        {/* সংরক্ষিত শিক্ষক তালিকা */}
         {activeTab === 'list' && (
           <TeacherDirectory
             savedTeachers={savedTeachers}
@@ -235,7 +305,7 @@ export default function App() {
             onDeleteTeacher={handleDeleteTeacher}
             onAddNew={() => {
               setFormData(createEmptyTeacher());
-              setActiveTab('form');
+              setActiveTab('registration');
             }}
             onImportBackup={handleImportBackup}
             onLoadSample={handleLoadSample}
@@ -245,13 +315,13 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="no-print mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+      <footer className="no-print mt-auto border-t border-slate-200 bg-white py-3.5 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>
-            © {new Date().getFullYear()} <strong>ডি-লিকন মডেল একাডেমী</strong> — সর্বস্বত্ব সংরক্ষিত।
+            © {new Date().getFullYear()} <strong>ডি-লিকন মডেল একাডেমী</strong> — মীর মার্কেট, সনমানিয়া, কাপাসিয়া, গাজীপুর।
           </span>
           <span className="text-slate-400">
-            শিক্ষক তথ্য সংগ্রহ ও ডিজিটাল ফরম সংস্করণ ২.০
+            ডিজিটাল শিক্ষক সহায়িকা ও তথ্য সংস্করণ ৩.০
           </span>
         </div>
       </footer>
