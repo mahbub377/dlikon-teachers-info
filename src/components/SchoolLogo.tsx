@@ -4,12 +4,14 @@ interface SchoolLogoProps {
   className?: string;
   size?: number;
   glow?: boolean;
+  preferVector?: boolean;
 }
 
 export const SchoolLogo: React.FC<SchoolLogoProps> = ({ 
   className = "w-12 h-12", 
   size = 120,
-  glow = false
+  glow = false,
+  preferVector = false
 }) => {
   const [imgError, setImgError] = useState(false);
 
@@ -24,13 +26,13 @@ export const SchoolLogo: React.FC<SchoolLogoProps> = ({
       )}
 
       {/* 1. High-fidelity Master Image Rendering with rounded crest framing */}
-      {!imgError ? (
+      {(!imgError && !preferVector) ? (
         <img
           src="/school-emblem.jpg"
           alt="ডি-লিকন মডেল একাডেমী"
+          crossOrigin="anonymous"
           onError={() => setImgError(true)}
           className="w-full h-full object-contain rounded-2xl drop-shadow-md transition-transform duration-300 hover:scale-105 pointer-events-none"
-          referrerPolicy="no-referrer"
         />
       ) : (
         /* 2. Pristine Fallback Scaled Vector Crest */

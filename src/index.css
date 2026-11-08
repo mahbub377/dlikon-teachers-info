@@ -9,42 +9,100 @@
 /* Print Specific Rules for 2-page A4 Teacher Form */
 @page {
   size: A4 portrait;
-  margin: 10mm 12mm;
+  margin: 8mm 10mm 8mm 10mm;
 }
 
 @media print {
+  /* Complete page reset */
   html, body {
-    background: #ffffff !important;
-    color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    width: 100% !important;
+    height: auto !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    font-size: 11pt !important;
   }
 
-  .no-print {
+  /* 1. HIDE EVERYTHING BY DEFAULT (Sidebars, chat, header, action bars) */
+  body * {
+    visibility: hidden;
+  }
+
+  /* 2. MAKE ONLY THE 2-PAGE PRINT AREA VISIBLE */
+  #printable-two-page-area,
+  #printable-two-page-area * {
+    visibility: visible !important;
+  }
+
+  /* 3. DOCK TO TOP-LEFT OF A4 SHEET AND STRIP SCREEN-ONLY TRANSFORMS */
+  #printable-two-page-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    background: #ffffff !important;
+    display: block !important;
+  }
+
+  /* 4. COLLAPSE NON-PRINT ELEMENTS SO THEY TAKE ZERO SPACE */
+  header, nav, aside, footer, .no-print, [role="dialog"], button, .toast-notification, [aria-label="Navigation"] {
     display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
   }
 
+  /* 5. A4 PAGES SPECIFICATIONS */
   .print-page {
     width: 100% !important;
     max-width: 100% !important;
-    min-height: auto !important;
+    min-height: 275mm !important;
+    max-height: 282mm !important;
     margin: 0 0 0 0 !important;
-    padding: 0 !important;
+    padding: 2mm 3mm !important;
     box-shadow: none !important;
     border: none !important;
     background: #ffffff !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
-  .page-break {
+  /* Exact break after Page 1 */
+  #a4-page-1 {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  /* Exact break before Page 2 */
+  #a4-page-2 {
     page-break-before: always !important;
     break-before: page !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 
   /* Ensure dotted lines and borders look crisp in print */
   .print-dotted {
-    border-bottom: 1px dotted #333333 !important;
+    border-bottom: 1px dotted #1e293b !important;
+  }
+
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  th, td {
+    border-color: #1e293b !important;
   }
 }
+
 

@@ -26,6 +26,7 @@ interface TeacherDirectoryProps {
   onImportBackup: (imported: TeacherFormData[]) => void;
   onLoadSample: () => void;
   onSwitchToPreview: (teacher: TeacherFormData) => void;
+  onPrintBlank?: () => void;
 }
 
 export const TeacherDirectory: React.FC<TeacherDirectoryProps> = ({
@@ -35,7 +36,8 @@ export const TeacherDirectory: React.FC<TeacherDirectoryProps> = ({
   onAddNew,
   onImportBackup,
   onLoadSample,
-  onSwitchToPreview
+  onSwitchToPreview,
+  onPrintBlank
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [designationFilter, setDesignationFilter] = useState('ALL');
@@ -151,6 +153,18 @@ export const TeacherDirectory: React.FC<TeacherDirectoryProps> = ({
         </div>
 
         <div className="flex items-center flex-wrap gap-2">
+          {onPrintBlank && (
+            <button
+              id="btn-print-blank-dir"
+              onClick={onPrintBlank}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-lg transition-colors cursor-pointer shadow-xs border border-amber-500"
+              title="শিক্ষকদের পূরণের জন্য ২ পাতার ফাঁকা ফরম PDF ডাউনলোড ও প্রিন্ট করুন"
+            >
+              <Download className="w-4 h-4" />
+              ব্ল্যাঙ্ক ফরম (PDF / প্রিন্ট)
+            </button>
+          )}
+
           <button
             id="btn-add-teacher-dir"
             onClick={onAddNew}

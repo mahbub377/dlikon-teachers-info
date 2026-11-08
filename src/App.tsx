@@ -13,6 +13,8 @@ import { TeacherFormData, ActiveTab } from './types';
 import { sampleTeacherData, createEmptyTeacher } from './data/sampleData';
 import { fetchTeachersFromDb, saveTeacherToDb, deleteTeacherFromDb } from './services/teacherApi';
 import { useAuth } from './context/AuthContext';
+import { printViaIsolatedIframe } from './utils/pdfExport';
+import { StudentEvaluationSheet } from './components/StudentEvaluationSheet';
 
 const STORAGE_KEY_CURRENT = 'dlma_current_form_v1';
 const STORAGE_KEY_LIST = 'dlma_teachers_directory_v1';
@@ -53,6 +55,8 @@ export default function App() {
   });
 
   const [isSavedNotification, setIsSavedNotification] = useState(false);
+  const [isBlankPrintMode, setIsBlankPrintMode] = useState<boolean>(false);
+  const [autoDownloadBlank, setAutoDownloadBlank] = useState<boolean>(false);
 
   // Sync teachers from database
   const loadTeachers = useCallback(async () => {
@@ -134,16 +138,24 @@ export default function App() {
     }
   };
 
-  // Direct print trigger
+  // Direct print trigger for current filled form
   const handlePrint = () => {
+    setIsBlankPrintMode(false);
     if (activeTab !== 'preview' && activeTab !== 'idcard') {
       setActiveTab('preview');
       setTimeout(() => {
-        window.print();
-      }, 350);
+        printViaIsolatedIframe('printable-two-page-area');
+      }, 500);
     } else {
-      window.print();
+      printViaIsolatedIframe('printable-two-page-area');
     }
+  };
+
+  // Direct print trigger for blank form (হাতে লেখার অফিশিয়াল কপি)
+  const handlePrintBlankForm = () => {
+    setIsBlankPrintMode(true);
+    setActiveTab('preview');
+    setAutoDownloadBlank(true);
   };
 
   // Select teacher from directory
@@ -201,6 +213,7 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         savedCount={savedTeachers.length}
+        onPrintBlank={handlePrintBlankForm}
       />
 
       {/* 3-dot collapsible Right Sidebar */}
@@ -220,6 +233,8 @@ export default function App() {
         onReset={handleResetForm}
         onSave={handleSaveTeacher}
         onPrint={handlePrint}
+        onPrintBlank={handlePrintBlankForm}
+        onDownloadBlankPdf={handlePrintBlankForm}
         savedCount={savedTeachers.length}
         isSavedNotification={isSavedNotification}
       />
@@ -231,6 +246,7 @@ export default function App() {
             onNavigate={(tab) => {
               setActiveTab(tab);
             }}
+            onPrintBlank={handlePrintBlankForm}
           />
         )}
 
@@ -239,15 +255,31 @@ export default function App() {
           <TeacherFormEditor
             formData={formData}
             setFormData={setFormData}
-            onViewPreview={() => setActiveTab('preview')}
+            onViewPreview={() => {
+              setIsBlankPrintMode(false);
+              setActiveTab('preview');
+            }}
             onSave={handleSaveTeacher}
             onLoadSample={handleLoadSample}
+            onPrintBlank={handlePrintBlankForm}
+            onReset={handleResetForm}
           />
         )}
 
-        {/* এডমিন ড্যাশবোর্ড: এক্সেল শিক্ষার্থী আপলোড ও ১১ ধাপের সিলেবাস */}
+        {/* এডমিন ড্যাশবোর্ড: এক্সেল শিক্ষার্থী (প্লে-১০ম), শিক্ষক, কর্মচারী ও উদ্যোক্তা আপলোড ও সিলেবাস */}
         {activeTab === 'admin_dashboard' && (
-          <AdminDashboard />
+          <AdminDashboard
+            teachers={savedTeachers}
+            onSelectTeacherForPrint={(tch) => {
+              setFormData(tch);
+              setIsBlankPrintMode(false);
+              setActiveTab('preview');
+            }}
+            onUpdateTeachers={(updated) => {
+              setSavedTeachers(updated);
+              localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(updated));
+            }}
+          />
         )}
 
         {/* ২। টিচারস টুল */}
@@ -285,6 +317,22 @@ export default function App() {
           <ModulePlaceholder module="todays_class" title="৮। আজকের ক্লাস ও সময়সূচী" />
         )}
 
+        {/* ৯। শিক্ষার্থী মূল্যায়ন সীট (লাইভ শ্রেণিকক্ষ মূল্যায়ন) */}
+        {activeTab === 'student_evaluation' && (
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6">
+            <StudentEvaluationSheet
+              students={(() => {
+                try {
+                  const s = localStorage.getItem('dlma_admin_students_v2');
+                  return s ? JSON.parse(s) : [];
+                } catch { return []; }
+              })()}
+              teachers={savedTeachers}
+              onClose={() => setActiveTab('admin_dashboard')}
+            />
+          </div>
+        )}
+
         {/* প্রিভিউ ও ২ পাতা A4 প্রিন্ট */}
         {activeTab === 'preview' && (
           <PrintableTwoPageForm
@@ -292,6 +340,10 @@ export default function App() {
             onEdit={() => setActiveTab('registration')}
             onPrint={handlePrint}
             onLoadSample={handleLoadSample}
+            isBlankMode={isBlankPrintMode}
+            setIsBlankMode={setIsBlankPrintMode}
+            autoDownloadBlank={autoDownloadBlank}
+            onResetAutoDownload={() => setAutoDownloadBlank(false)}
           />
         )}
 
@@ -318,6 +370,7 @@ export default function App() {
             onImportBackup={handleImportBackup}
             onLoadSample={handleLoadSample}
             onSwitchToPreview={handleSwitchToPreview}
+            onPrintBlank={handlePrintBlankForm}
           />
         )}
       </main>

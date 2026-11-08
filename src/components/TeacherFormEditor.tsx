@@ -14,7 +14,11 @@ import {
   Eye, 
   Save, 
   FileCheck,
-  CheckSquare
+  CheckSquare,
+  Printer,
+  FileText,
+  RotateCcw,
+  Download
 } from 'lucide-react';
 import { TeacherFormData, EducationRecord, ExperienceRecord } from '../types';
 import { 
@@ -34,6 +38,8 @@ interface TeacherFormEditorProps {
   onViewPreview: () => void;
   onSave: () => void;
   onLoadSample: () => void;
+  onPrintBlank?: () => void;
+  onReset?: () => void;
 }
 
 export const TeacherFormEditor: React.FC<TeacherFormEditorProps> = ({
@@ -41,7 +47,9 @@ export const TeacherFormEditor: React.FC<TeacherFormEditorProps> = ({
   setFormData,
   onViewPreview,
   onSave,
-  onLoadSample
+  onLoadSample,
+  onPrintBlank,
+  onReset
 }) => {
   const [sigModalType, setSigModalType] = useState<'teacher' | 'principal' | null>(null);
 
@@ -202,6 +210,50 @@ export const TeacherFormEditor: React.FC<TeacherFormEditorProps> = ({
             <Eye className="w-3.5 h-3.5" />
             প্রিন্ট প্রিভিউ
           </button>
+        </div>
+      </div>
+
+      {/* Data Entry Operator Assistant Box */}
+      <div className="bg-amber-50/90 border-2 border-amber-300 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-slate-800">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-amber-200 text-amber-900 rounded-xl shrink-0">
+            <FileText className="w-5 h-5 text-amber-900" />
+          </div>
+          <div>
+            <h3 className="font-bold text-amber-950 text-sm flex items-center gap-2">
+              <span>কাগজের পূরণকৃত ফরম দেখে ডাটা এন্ট্রি করছেন?</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200 text-amber-900">অফিস ডাটা এন্ট্রি</span>
+            </h3>
+            <p className="text-xs text-amber-900/90 mt-0.5 leading-relaxed">
+              শিক্ষক কর্তৃক জমাকৃত হাতের লেখা ফরমটি সামনে রেখে নিচের ঘরগুলো টাইপ করুন এবং সংরক্ষণ বাটনে ক্লিক করে ডেটাবেজে সেভ নিশ্চিত করুন।
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+          {onReset && (
+            <button
+              id="btn-operator-reset-entry"
+              type="button"
+              onClick={onReset}
+              className="px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer text-xs flex items-center gap-1.5"
+              title="নতুন কাগজের ফরম টাইপ করতে বর্তমান ফিল্ড খালি করুন"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+              নতুন খালি এন্ট্রি
+            </button>
+          )}
+          {onPrintBlank && (
+            <button
+              id="btn-operator-print-blank"
+              type="button"
+              onClick={onPrintBlank}
+              className="px-3.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-lg shadow-xs transition-all cursor-pointer text-xs flex items-center gap-1.5 border border-amber-500"
+              title="শিক্ষকদের পূরণের জন্য ব্ল্যাঙ্ক ফরম PDF ডাউনলোড ও প্রিন্ট করুন"
+            >
+              <Download className="w-3.5 h-3.5" />
+              ব্ল্যাঙ্ক ফরম (PDF / প্রিন্ট)
+            </button>
+          )}
         </div>
       </div>
 

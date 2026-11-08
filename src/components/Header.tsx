@@ -10,7 +10,9 @@ import {
   Home,
   UserPlus,
   ShieldAlert,
-  BookOpen
+  BookOpen,
+  Download,
+  FileText
 } from 'lucide-react';
 import { SchoolLogo } from './SchoolLogo';
 import { ActiveTab } from '../types';
@@ -24,6 +26,8 @@ interface HeaderProps {
   onReset: () => void;
   onSave: () => void;
   onPrint: () => void;
+  onPrintBlank?: () => void;
+  onDownloadBlankPdf?: () => void;
   savedCount: number;
   isSavedNotification?: boolean;
 }
@@ -37,6 +41,8 @@ export const Header: React.FC<HeaderProps> = ({
   onReset,
   onSave,
   onPrint,
+  onPrintBlank,
+  onDownloadBlankPdf,
   isSavedNotification = false
 }) => {
   return (
@@ -96,7 +102,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden md:inline">হোম</span>
             </button>
 
-            {/* DIRECT ACCESS: এডমিন ড্যাশবোর্ড (সিলেবাস ও এক্সেল) */}
+            {/* DIRECT ACCESS: এক্সেল ও এডমিন হাব (শিক্ষার্থী, শিক্ষক, কর্মচারী, উদ্যোক্তা ও সিলেবাস) */}
             <button
               id="btn-admin-dashboard"
               onClick={() => setActiveTab('admin_dashboard')}
@@ -105,10 +111,25 @@ export const Header: React.FC<HeaderProps> = ({
                   ? 'bg-amber-600 text-white border-amber-700 ring-2 ring-amber-400'
                   : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300'
               }`}
-              title="সিলেবাস আপডেট ও শিক্ষার্থী এক্সেল আপলোড ড্যাশবোর্ড"
+              title="শিক্ষার্থী (প্লে-১০ম), শিক্ষক, কর্মচারী, উদ্যোক্তাদের এক্সেল আপলোড ও সিলেবাস হাব"
             >
               <ShieldAlert className="w-3.5 h-3.5 text-amber-700" />
-              <span>এডমিন ড্যাশবোর্ড (সিলেবাস)</span>
+              <span>এডমিন হাব</span>
+            </button>
+
+            {/* DIRECT ACCESS: শিক্ষার্থী মূল্যায়ন সীট */}
+            <button
+              id="btn-evaluation-nav"
+              onClick={() => setActiveTab('student_evaluation')}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs border ${
+                activeTab === 'student_evaluation'
+                  ? 'bg-emerald-700 text-white border-emerald-800 ring-2 ring-emerald-400'
+                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-300'
+              }`}
+              title="শ্রেণিকক্ষ লাইভ শিক্ষার্থী মূল্যায়ন ও অভিভাবক স্লিপ"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+              <span className="hidden sm:inline">মূল্যায়ন সীট</span>
             </button>
 
             {activeTab === 'registration' && (
@@ -167,11 +188,34 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             )}
 
+            {onPrintBlank && (
+              <div className="relative inline-flex items-center rounded-lg shadow-xs group">
+                <button
+                  id="btn-print-blank-header"
+                  onClick={onPrintBlank}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-950 bg-amber-400 hover:bg-amber-300 border border-amber-500 rounded-l-lg shadow-xs transition-all cursor-pointer"
+                  title="শিক্ষকদের পূরণ করার জন্য ২ পাতার ব্ল্যাঙ্ক ফরম প্রিন্ট প্রিভিউ দেখুন"
+                >
+                  <Printer className="w-3.5 h-3.5 text-slate-950" />
+                  <span>ব্ল্যাঙ্ক ফরম প্রিন্ট</span>
+                </button>
+                <button
+                  id="btn-print-blank-header-direct"
+                  onClick={onDownloadBlankPdf || onPrintBlank}
+                  className="inline-flex items-center gap-1 px-2.5 py-2 text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 border-t border-b border-r border-amber-600 rounded-r-lg transition-all cursor-pointer shadow-xs"
+                  title="সরাসরি ২-পাতা A4 ব্ল্যাঙ্ক PDF ফাইল ডাউনলোড করুন"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-950" />
+                  <span className="hidden xl:inline text-[11px]">PDF</span>
+                </button>
+              </div>
+            )}
+
             <button
               id="btn-print-action"
               onClick={onPrint}
               className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition-colors shadow-xs cursor-pointer"
-              title="প্রিন্ট প্রিভিউ দেখুন"
+              title="বর্তমান ফরমের প্রিন্ট প্রিভিউ দেখুন"
             >
               <Printer className="w-3.5 h-3.5 text-amber-300" />
               প্রিন্ট

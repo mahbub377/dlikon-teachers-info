@@ -94,6 +94,7 @@ export type ActiveTab =
   | 'home'
   | 'registration' // ১। শিক্ষক নিবন্ধন
   | 'admin_dashboard' // এডমিন ড্যাশবোর্ড (এক্সেল শিক্ষার্থী আপলোড ও ১১ ধাপের সিলেবাস)
+  | 'student_evaluation' // শিক্ষার্থী দৈনিক মূল্যায়ন সীট ও অভিভাবক রিপোর্ট
   | 'teachers_tools' // ২। টিচারস টুল
   | 'session_plan' // ৩। সেশন প্লান
   | 'weak_students' // ৪। আজকের দুর্বল শিক্ষার্থী

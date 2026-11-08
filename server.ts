@@ -11,6 +11,14 @@ async function startServer() {
   // JSON parser with sufficient limit for teacher photo/signature
   app.use(express.json({ limit: '15mb' }));
 
+  // Global CORS headers to prevent canvas tainting and allow iframe preview
+  app.use((_req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    next();
+  });
+
   // API Health Check
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

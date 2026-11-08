@@ -10,16 +10,20 @@ import {
   Award,
   Users,
   CalendarCheck,
-  ShieldAlert
+  ShieldAlert,
+  Printer,
+  FileText,
+  Download
 } from 'lucide-react';
 import { SchoolLogo } from './SchoolLogo';
 import { ActiveTab } from '../types';
 
 interface InspirationalHomeProps {
   onNavigate: (tab: ActiveTab) => void;
+  onPrintBlank?: () => void;
 }
 
-export const InspirationalHome: React.FC<InspirationalHomeProps> = ({ onNavigate }) => {
+export const InspirationalHome: React.FC<InspirationalHomeProps> = ({ onNavigate, onPrintBlank }) => {
   return (
     <div className="relative min-h-[calc(100vh-4rem)] bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 text-white overflow-hidden flex flex-col justify-between">
       {/* Background Radiating Aura & Light Beams from Logo */}
@@ -97,42 +101,94 @@ export const InspirationalHome: React.FC<InspirationalHomeProps> = ({ onNavigate
 
         {/* Action Shortcuts */}
         <div className="flex flex-wrap items-center justify-center gap-3 w-full">
+          {onPrintBlank && (
+            <button
+              id="home-btn-print-blank"
+              onClick={onPrintBlank}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/30 transition-all cursor-pointer hover:scale-105 active:scale-95 border-2 border-amber-300"
+              title="শিক্ষকদের জন্য ২ পাতার ব্ল্যাঙ্ক ফরম সরাসরি PDF ডাউনলোড ও প্রিন্ট করুন"
+            >
+              <Download className="w-4 h-4 text-slate-950" />
+              <span>ব্ল্যাঙ্ক শিক্ষক ফরম (PDF ডাউনলোড ও প্রিন্ট)</span>
+            </button>
+          )}
+
           <button
             id="home-btn-admin-dashboard"
             onClick={() => onNavigate('admin_dashboard')}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/25 transition-all cursor-pointer hover:scale-105 active:scale-95 border-2 border-amber-300"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-sm shadow-md transition-all cursor-pointer hover:scale-105 active:scale-95 border border-amber-300"
           >
-            <ShieldAlert className="w-5 h-5 text-slate-950" />
-            এডমিন ড্যাশবোর্ড (সিলেবাস ও এক্সেল আপলোড)
-            <ArrowRight className="w-4 h-4" />
+            <ShieldAlert className="w-4 h-4 text-slate-950" />
+            এডমিন ড্যাশবোর্ড (সিলেবাস)
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
 
           <button
             id="home-btn-register"
             onClick={() => onNavigate('registration')}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-amber-200 border border-amber-400/30 font-medium text-sm transition-all cursor-pointer hover:border-amber-400/60"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-teal-700 hover:bg-teal-600 text-white font-semibold text-sm transition-all cursor-pointer shadow-md"
           >
             <GraduationCap className="w-4 h-4" />
-            শিক্ষক নিবন্ধন ফরম
+            শিক্ষক নিবন্ধন ও ডাটা এন্ট্রি
           </button>
 
           <button
             id="home-btn-session"
             onClick={() => onNavigate('session_plan')}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-amber-200 border border-amber-400/30 font-medium text-sm transition-all cursor-pointer hover:border-amber-400/60"
+            className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-amber-200 border border-amber-400/30 font-medium text-sm transition-all cursor-pointer hover:border-amber-400/60"
           >
             <CalendarCheck className="w-4 h-4 text-amber-400" />
-            সেশন প্ল্যান ও ক্লাস
+            সেশন প্ল্যান
           </button>
 
           <button
             id="home-btn-weak-students"
             onClick={() => onNavigate('weak_students')}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-amber-200 border border-amber-400/30 font-medium text-sm transition-all cursor-pointer hover:border-amber-400/60"
+            className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-amber-200 border border-amber-400/30 font-medium text-sm transition-all cursor-pointer hover:border-amber-400/60"
           >
             <Users className="w-4 h-4 text-amber-400" />
-            আজকের দুর্বল শিক্ষার্থী
+            দুর্বল শিক্ষার্থী
           </button>
+        </div>
+
+        {/* 3-Step Teacher Info Collection Workflow */}
+        <div className="w-full max-w-4xl mt-8 p-4 rounded-2xl bg-slate-900/80 border border-amber-500/30 backdrop-blur-md text-left shadow-lg">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-amber-400" />
+              <span className="text-sm font-bold text-amber-300">শিক্ষক তথ্য সংগ্রহের ৩-ধাপের সহজ অফিশিয়াল পদ্ধতি:</span>
+            </div>
+            <span className="text-[11px] text-slate-400">অফিস ও ডাটা এন্ট্রি সহায়িকা</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/80">
+              <div className="font-bold text-amber-300 mb-1 flex items-center gap-1.5">
+                <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center text-[11px] font-mono">১</span>
+                ব্ল্যাঙ্ক ফরম প্রিন্ট
+              </div>
+              <p className="text-slate-300 text-[11px] leading-relaxed">
+                &quot;ব্ল্যাঙ্ক শিক্ষক ফরম প্রিন্ট&quot; বাটনে চাপ দিয়ে ২ পাতার ফাঁকা ফরম প্রিন্ট করে শিক্ষকদের মাঝে বিতরণ করুন।
+              </p>
+            </div>
+            <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/80">
+              <div className="font-bold text-teal-300 mb-1 flex items-center gap-1.5">
+                <span className="w-5 h-5 rounded-full bg-teal-500/20 text-teal-300 flex items-center justify-center text-[11px] font-mono">২</span>
+                শিক্ষক কর্তৃক পূরণ ও জমা
+              </div>
+              <p className="text-slate-300 text-[11px] leading-relaxed">
+                শিক্ষকগণ স্বহস্তে তথ্য পূরণ করে পাসপোর্ট সাইজ ছবি ও প্রয়োজনীয় সনদসহ একাডেমি অফিসে জমা দেবেন।
+              </p>
+            </div>
+            <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/80">
+              <div className="font-bold text-emerald-300 mb-1 flex items-center gap-1.5">
+                <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-[11px] font-mono">৩</span>
+                ডাটা এন্ট্রি ও স্থায়ী সংরক্ষণ
+              </div>
+              <p className="text-slate-300 text-[11px] leading-relaxed">
+                জমাকৃত ফরম দেখে ডাটা এন্ট্রি অপারেটর &quot;শিক্ষক নিবন্ধন&quot; পোর্টালে টাইপ করে &quot;সংরক্ষণ&quot; বাটনে ক্লিক করবেন।
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 

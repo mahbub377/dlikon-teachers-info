@@ -17,7 +17,9 @@ import {
   LogOut,
   LogIn,
   ShieldAlert,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Printer,
+  CheckCircle2
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { SchoolLogo } from './SchoolLogo';
@@ -29,6 +31,7 @@ interface SidebarProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   savedCount: number;
+  onPrintBlank?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -36,7 +39,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onClose,
   activeTab,
   setActiveTab,
-  savedCount
+  savedCount,
+  onPrintBlank
 }) => {
   const { currentUser, signInWithGoogle, signOut } = useAuth();
 
@@ -57,11 +61,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'admin_dashboard',
-      label: 'এডমিন ড্যাশবোর্ড',
-      subLabel: 'শিক্ষার্থী এক্সেল আপলোড ও ১১ ধাপের সিলেবাস',
+      label: 'এক্সেল ও এডমিন হাব',
+      subLabel: 'শিক্ষার্থী (প্লে-১০ম), শিক্ষক, কর্মী, উদ্যোক্তা ও সিলেবাস',
       icon: ShieldAlert,
       color: 'text-amber-600 bg-amber-50',
-      badge: 'নতুন',
+      badge: '৪টি ডেটাবেজ',
     },
     {
       id: 'teachers_tools',
@@ -113,20 +117,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Clock3,
       color: 'text-cyan-600 bg-cyan-50',
     },
+    {
+      id: 'student_evaluation',
+      label: '৯। শিক্ষার্থী মূল্যায়ন সীট',
+      subLabel: 'হাতের লেখা, পড়ার প্রস্তুতি, শিষ্টাচার ও উপস্থিতি মূল্যায়ন',
+      icon: CheckCircle2,
+      color: 'text-emerald-600 bg-emerald-50',
+      badge: 'লাইভ ক্লাসরুম',
+    },
   ];
 
   const secondaryItems: {
-    id: ActiveTab;
+    id: ActiveTab | 'blank_print';
     label: string;
     icon: React.ElementType;
-    badge?: number;
+    badge?: string | number;
+    badgeColor?: string;
   }[] = [
+    { 
+      id: 'blank_print', 
+      label: 'ব্ল্যাঙ্ক শিক্ষক ফরম প্রিন্ট (হাতে লেখার কপি)', 
+      icon: Printer, 
+      badge: 'প্রিন্ট',
+      badgeColor: 'bg-amber-100 text-amber-900 border border-amber-300'
+    },
     { id: 'preview', label: 'ফরম প্রিন্ট ও প্রিভিউ (A4)', icon: FileCheck },
     { id: 'idcard', label: 'শিক্ষক আইডি কার্ড', icon: IdCard },
     { id: 'list', label: 'সংরক্ষিত শিক্ষক তালিকা', icon: FolderOpen, badge: savedCount },
   ];
 
-  const handleSelect = (tab: ActiveTab) => {
+  const handleSelect = (tab: ActiveTab | 'blank_print') => {
+    if (tab === 'blank_print') {
+      onPrintBlank?.();
+      onClose();
+      return;
+    }
     setActiveTab(tab);
     onClose();
   };
@@ -261,7 +286,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span>{item.label}</span>
                 </div>
                 {item.badge !== undefined && (
-                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-800">
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${item.badgeColor || 'bg-teal-100 text-teal-800'}`}>
                     {item.badge}
                   </span>
                 )}
