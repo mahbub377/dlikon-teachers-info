@@ -13,7 +13,8 @@ import {
   ShieldAlert,
   Printer,
   FileText,
-  Download
+  Download,
+  Wrench
 } from 'lucide-react';
 import { SchoolLogo } from './SchoolLogo';
 import { ActiveTab } from '../types';
@@ -148,6 +149,15 @@ export const InspirationalHome: React.FC<InspirationalHomeProps> = ({ onNavigate
           >
             <BookOpen className="w-4 h-4 text-amber-300" />
             ডিজিটাল লাইব্রেরী (বই ও প্রশ্ন ব্যাংক)
+          </button>
+
+          <button
+            id="home-btn-teachers-tools"
+            onClick={() => onNavigate('teachers_tools')}
+            className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-amber-200 border border-amber-400/30 font-medium text-sm transition-all cursor-pointer hover:border-amber-400/60"
+          >
+            <Wrench className="w-4 h-4 text-amber-400" />
+            টিচারস টুল (প্রশ্ন, নোট, প্রেজেন্টেশন, সিলেবাস)
           </button>
 
           <button

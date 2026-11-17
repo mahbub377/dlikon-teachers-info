@@ -36,6 +36,7 @@ import {
 import { StudentRecord, StudentDailyEvaluation, SCHOOL_CLASSES } from '../types/adminTypes';
 import { TeacherFormData } from '../types';
 import { SchoolLogo } from './SchoolLogo';
+import { loadModelTestSessions, evaluateStudentModelTest } from './ScholarshipModelTestPanel';
 
 interface AdminAnalyticsDashboardProps {
   students: StudentRecord[];
@@ -192,6 +193,40 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
       { subject: 'ইসলাম ও নৈতিক শিক্ষা', শিক্ষক: 2, ক্লাস_সপ্তাহে: 16 },
       { subject: 'অন্যান্য', শিক্ষক: 2, ক্লাস_সপ্তাহে: 14 }
     ];
+  }, []);
+
+  // Scholarship & Model Test Readiness Analytics
+  const modelTestAnalytics = useMemo(() => {
+    const sessions = loadModelTestSessions();
+    const progression = sessions.map((sess, idx) => {
+      const evals = sess.results.map((r) =>
+        evaluateStudentModelTest(r, sess.subjects, sess.targetReadinessPercent)
+      );
+      const avgPct = evals.length > 0
+        ? Math.round(evals.reduce((a, b) => a + b.percentage, 0) / evals.length)
+        : 0;
+      const readyCount = evals.filter((e) => e.isScholarshipReady).length;
+      const readyPct = evals.length > 0 ? Math.round((readyCount / evals.length) * 100) : 0;
+      return {
+        name: `টেস্ট ${idx + 1}`,
+        গড়_স্কোর: avgPct,
+        পাকাপোক্ত_হার: readyPct
+      };
+    });
+
+    const latest = sessions[sessions.length - 1];
+    const latestEvals = latest
+      ? latest.results.map((r) => evaluateStudentModelTest(r, latest.subjects, latest.targetReadinessPercent))
+      : [];
+
+    const tierBreakdown = [
+      { name: 'পাকাপোক্ত (≥৮৫%)', সংখ্যা: latestEvals.filter((e) => e.tier === 'solid').length },
+      { name: 'সম্ভাবনাময়', সংখ্যা: latestEvals.filter((e) => e.tier === 'promising').length },
+      { name: 'অনুশীলন', সংখ্যা: latestEvals.filter((e) => e.tier === 'needs_practice').length },
+      { name: 'দুর্বল', সংখ্যা: latestEvals.filter((e) => e.tier === 'intensive_care').length }
+    ];
+
+    return { progression, tierBreakdown, latestTitle: latest?.title || 'বৃত্তি মডেল টেস্ট' };
   }, []);
 
   return (
@@ -563,6 +598,57 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
               <Area type="monotone" dataKey="পাঠ_মুখস্তকরণ" stroke="#6366f1" strokeWidth={2.5} fillOpacity={1} fill="url(#colorLesson)" />
             </AreaChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* SECTION 3: SCHOLARSHIP & MODEL TEST READINESS ANALYTICS */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+          <div className="border-b border-slate-100 pb-2">
+            <h3 className="font-black text-sm text-slate-900 flex items-center gap-1.5">
+              <Award className="w-4 h-4 text-amber-600" />
+              <span>বৃত্তি ও মডেল টেস্ট প্রস্তুতি উন্নয়ন গ্রাফ</span>
+            </h3>
+            <p className="text-[11px] text-slate-500">
+              ধারাবাহিক মডেল টেস্টগুলোতে বৃত্তি-প্রস্তুত (পাকাপোক্ত) শিক্ষার্থীর শতাংশ বৃদ্ধি
+            </p>
+          </div>
+          <div className="h-60 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={modelTestAnalytics.progression} margin={{ top: 10, right: 16, left: -16, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#334155' }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#475569' }} />
+                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: '11px' }} />
+                <Line type="monotone" dataKey="গড়_স্কোর" name="ব্যাচ গড় (%)" stroke="#0f766e" strokeWidth={2.5} dot={{ r: 4 }} />
+                <Line type="monotone" dataKey="পাকাপোক্ত_হার" name="বৃত্তি-প্রস্তুত (%)" stroke="#d97706" strokeWidth={2.5} dot={{ r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+          <div className="border-b border-slate-100 pb-2">
+            <h3 className="font-black text-sm text-slate-900 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>বৃত্তি প্রস্তুতির স্তর বিভাজন ({modelTestAnalytics.latestTitle})</span>
+            </h3>
+            <p className="text-[11px] text-slate-500">
+              সর্বশেষ মডেল টেস্ট অনুযায়ী শিক্ষার্থীর পাকাপোক্ততা শ্রেণিবিন্যাস
+            </p>
+          </div>
+          <div className="h-60 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={modelTestAnalytics.tierBreakdown} margin={{ top: 10, right: 16, left: -16, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="name" tick={{ fontSize: 10.5, fill: '#334155' }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#475569' }} />
+                <Tooltip />
+                <Bar dataKey="সংখ্যা" name="শিক্ষার্থী সংখ্যা" fill="#d97706" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>

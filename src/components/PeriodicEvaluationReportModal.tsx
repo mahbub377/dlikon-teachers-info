@@ -24,14 +24,16 @@ import {
   LessonPreparation,
   AttendanceStatus,
   BehaviorStatus,
-  SCHOOL_CLASSES 
+  SCHOOL_CLASSES,
+  ACADEMY_EXAMS_9
 } from '../types/adminTypes';
 import { TeacherFormData } from '../types';
 import { SchoolLogo } from './SchoolLogo';
 import { formatBanglaRoll, normalizeClassName, normalizeSection } from './AdminDashboard';
 import { downloadSingleElementAsPdf } from '../utils/pdfExport';
+import { loadModelTestSessions, evaluateStudentModelTest } from './ScholarshipModelTestPanel';
 
-export type ReportPeriodType = 'weekly' | 'monthly' | 'quarterly' | 'exam_term' | 'custom';
+export type ReportPeriodType = 'weekly' | 'monthly' | 'quarterly' | 'exam_term' | 'model_test' | 'custom';
 
 interface PeriodicEvaluationReportModalProps {
   students: StudentRecord[];
@@ -50,7 +52,7 @@ export const PeriodicEvaluationReportModal: React.FC<PeriodicEvaluationReportMod
 }) => {
   // Period Selection
   const [periodType, setPeriodType] = useState<ReportPeriodType>('monthly');
-  const [examName, setExamName] = useState<string>('১ম সাময়িক / অর্ধবার্ষিক পরীক্ষা');
+  const [examName, setExamName] = useState<string>(ACADEMY_EXAMS_9[0].label);
   const [quarterName, setQuarterName] = useState<string>('১ম প্রান্তিক (জানুয়ারি - মার্চ)');
 
   // Date Range state
@@ -150,6 +152,47 @@ export const PeriodicEvaluationReportModal: React.FC<PeriodicEvaluationReportMod
     ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [filteredEvaluations, currentStudent, selectedClass]);
 
+  // Student Model Test / Scholarship Readiness Records
+  const studentModelTestRecords = useMemo(() => {
+    if (!currentStudent) return [];
+    const sessions = loadModelTestSessions();
+    const stuRoll = formatBanglaRoll(currentStudent.roll);
+    const matches: {
+      sessionTitle: string;
+      scholarshipType: string;
+      date: string;
+      targetPercent: number;
+      obtained: number;
+      fullMarks: number;
+      percentage: number;
+      tierLabel: string;
+      weakSubjects: string[];
+    }[] = [];
+
+    sessions.forEach((sess) => {
+      const rec = sess.results.find(
+        (r) =>
+          r.studentId === currentStudent.id ||
+          (r.studentName === currentStudent.name && formatBanglaRoll(r.roll) === stuRoll)
+      );
+      if (rec) {
+        const evalData = evaluateStudentModelTest(rec, sess.subjects, sess.targetReadinessPercent);
+        matches.push({
+          sessionTitle: sess.title,
+          scholarshipType: sess.scholarshipType,
+          date: sess.date,
+          targetPercent: sess.targetReadinessPercent,
+          obtained: evalData.totalObtained,
+          fullMarks: evalData.totalFullMarks,
+          percentage: evalData.percentage,
+          tierLabel: evalData.tierLabel,
+          weakSubjects: evalData.weakSubjects
+        });
+      }
+    });
+    return matches;
+  }, [currentStudent]);
+
   // Calculations for current student
   const studentMetrics = useMemo(() => {
     const totalDays = studentEvaluations.length;
@@ -229,6 +272,7 @@ export const PeriodicEvaluationReportModal: React.FC<PeriodicEvaluationReportMod
     if (periodType === 'monthly') return 'মাসিক ধারাবাহিক মূল্যায়ন রিপোর্ট (৩০ দিন)';
     if (periodType === 'quarterly') return `ত্রৈমাসিক মূল্যায়ন রিপোর্ট (${quarterName})`;
     if (periodType === 'exam_term') return `পরীক্ষা পর্যন্ত সার্বিক মূল্যায়ন রিপোর্ট (${examName})`;
+    if (periodType === 'model_test') return 'বৃত্তি ও মডেল টেস্ট প্রস্তুতি যাচাই রিপোর্ট';
     return `পর্যাবৃত্ত মূল্যায়ন রিপোর্ট (${startDate} থেকে ${endDate})`;
   };
 
@@ -314,7 +358,7 @@ export const PeriodicEvaluationReportModal: React.FC<PeriodicEvaluationReportMod
           </div>
 
           {/* Period Selection Tabs */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+          <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-1">
             <button
               onClick={() => handlePeriodChange('weekly')}
               className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
@@ -324,8 +368,8 @@ export const PeriodicEvaluationReportModal: React.FC<PeriodicEvaluationReportMod
               }`}
             >
               <Clock className="w-4 h-4 mx-auto mb-1 text-amber-800" />
-              <span className="block text-xs font-bold">১. সাপ্তাহিক রিপোর্ট</span>
-              <span className="text-[10px] opacity-80">বিগত ৭ দিনের মূল্যায়ন</span>
+              <span className="block text-xs font-bold">১. সাপ্তাহিক</span>
+              <span className="text-[10px] opacity-80">৭ দিনের মূল্যায়ন</span>
             </button>
 
             <button
@@ -337,8 +381,8 @@ export const PeriodicEvaluationReportModal: React.FC<PeriodicEvaluationReportMod
               }`}
             >
               <Calendar className="w-4 h-4 mx-auto mb-1 text-teal-800" />
-              <span className="block text-xs font-bold">২. মাসিক রিপোর্ট</span>
-              <span className="text-[10px] opacity-80">বিগত ৩০ দিন / চলতি মাস</span>
+              <span className="block text-xs font-bold">২. মাসিক</span>
+              <span className="text-[10px] opacity-80">৩০ দিন / চলতি মাস</span>
             </button>
 
             <button
@@ -350,8 +394,8 @@ export const PeriodicEvaluationReportModal: React.FC<PeriodicEvaluationReportMod
               }`}
             >
               <Layers className="w-4 h-4 mx-auto mb-1 text-blue-800" />
-              <span className="block text-xs font-bold">৩. ত্রৈমাসিক রিপোর্ট</span>
-              <span className="text-[10px] opacity-80">৩ মাসের প্রান্তিক মূল্যায়ন</span>
+              <span className="block text-xs font-bold">৩. ত্রৈমাসিক</span>
+              <span className="text-[10px] opacity-80">৩ মাসের প্রান্তিক</span>
             </button>
 
             <button
@@ -363,8 +407,21 @@ export const PeriodicEvaluationReportModal: React.FC<PeriodicEvaluationReportMod
               }`}
             >
               <Award className="w-4 h-4 mx-auto mb-1 text-purple-800" />
-              <span className="block text-xs font-bold">৪. পরীক্ষা পর্যন্ত রিপোর্ট</span>
-              <span className="text-[10px] opacity-80">পরীক্ষার পূর্বের পূর্ণ মূল্যায়ন</span>
+              <span className="block text-xs font-bold">৪. ৯ পরীক্ষা</span>
+              <span className="text-[10px] opacity-80">পার্বিক ও সাময়িক</span>
+            </button>
+
+            <button
+              onClick={() => handlePeriodChange('model_test')}
+              className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                periodType === 'model_test'
+                  ? 'bg-amber-500 text-slate-950 font-black border-amber-600 shadow-sm ring-2 ring-amber-300'
+                  : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200'
+              }`}
+            >
+              <Sparkles className="w-4 h-4 mx-auto mb-1 text-amber-700" />
+              <span className="block text-xs font-bold">৫. বৃত্তি মডেল টেস্ট</span>
+              <span className="text-[10px] opacity-80">প্রস্তুতি যাচাই সনদ</span>
             </button>
 
             <button
@@ -376,8 +433,8 @@ export const PeriodicEvaluationReportModal: React.FC<PeriodicEvaluationReportMod
               }`}
             >
               <Filter className="w-4 h-4 mx-auto mb-1 text-slate-800" />
-              <span className="block text-xs font-bold">৫. কাস্টম তারিখ সীমা</span>
-              <span className="text-[10px] opacity-80">নির্দিষ্ট সময় নির্বাচন</span>
+              <span className="block text-xs font-bold">৬. কাস্টম তারিখ</span>
+              <span className="text-[10px] opacity-80">নির্দিষ্ট সময়সীমা</span>
             </button>
           </div>
 
@@ -446,24 +503,43 @@ export const PeriodicEvaluationReportModal: React.FC<PeriodicEvaluationReportMod
               </div>
             </div>
 
-            {/* Date Range Inputs */}
+            {/* Date Range Inputs (plus 9-exam selector when exam_term) */}
             <div>
-              <label className="block font-bold text-slate-700 mb-1">কার্যকর তারিখ সীমা:</label>
-              <div className="flex items-center gap-1.5">
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-1/2 bg-white border border-slate-300 rounded-lg p-1 text-[11px] font-mono"
-                />
-                <span className="text-slate-400">থেকে</span>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-1/2 bg-white border border-slate-300 rounded-lg p-1 text-[11px] font-mono"
-                />
-              </div>
+              {periodType === 'exam_term' ? (
+                <>
+                  <label className="block font-bold text-slate-700 mb-1">পরীক্ষা নির্বাচন (৯টি):</label>
+                  <select
+                    value={examName}
+                    onChange={(e) => setExamName(e.target.value)}
+                    className="w-full bg-white border border-slate-300 rounded-lg p-1.5 font-bold text-slate-900 cursor-pointer"
+                  >
+                    {ACADEMY_EXAMS_9.map((ex) => (
+                      <option key={ex.id} value={ex.label}>
+                        {ex.order}। {ex.label}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              ) : (
+                <>
+                  <label className="block font-bold text-slate-700 mb-1">কার্যকর তারিখ সীমা:</label>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-1/2 bg-white border border-slate-300 rounded-lg p-1 text-[11px] font-mono"
+                    />
+                    <span className="text-slate-400">থেকে</span>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-1/2 bg-white border border-slate-300 rounded-lg p-1 text-[11px] font-mono"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -592,6 +668,52 @@ export const PeriodicEvaluationReportModal: React.FC<PeriodicEvaluationReportMod
                 </div>
               </div>
             </div>
+
+            {/* Scholarship & Model Test Readiness History (shown when records exist or model_test mode active) */}
+            {(periodType === 'model_test' || studentModelTestRecords.length > 0) && (
+              <div className="border border-slate-800 rounded-lg p-3.5 font-sans space-y-2">
+                <div className="flex items-center justify-between border-b border-slate-300 pb-1.5 text-xs font-black text-slate-950">
+                  <span>বৃত্তি ও মডেল টেস্ট প্রস্তুতি জাজমেন্ট</span>
+                  <span className="text-[11px] font-bold text-slate-700">
+                    পাকাপোক্ত লক্ষ্যমাত্রা: ৮৫%+
+                  </span>
+                </div>
+                {studentModelTestRecords.length === 0 ? (
+                  <p className="text-xs text-slate-500 py-2">
+                    এই শিক্ষার্থীর নামে এখনো কোনো বৃত্তি মডেল টেস্টের নম্বর এন্ট্রি করা হয়নি।
+                  </p>
+                ) : (
+                  <table className="w-full text-left text-[10.5px] border-collapse border border-slate-400">
+                    <thead>
+                      <tr className="bg-slate-100 font-bold">
+                        <th className="p-1.5 border border-slate-400">মডেল টেস্ট / বৃত্তি</th>
+                        <th className="p-1.5 border border-slate-400">তারিখ</th>
+                        <th className="p-1.5 border border-slate-400 text-center">নম্বর (%)</th>
+                        <th className="p-1.5 border border-slate-400">দুর্বল বিষয়</th>
+                        <th className="p-1.5 border border-slate-400">প্রস্তুতির জাজমেন্ট</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {studentModelTestRecords.map((mt, idx) => (
+                        <tr key={idx}>
+                          <td className="p-1.5 border border-slate-400 font-semibold">
+                            {mt.sessionTitle}
+                          </td>
+                          <td className="p-1.5 border border-slate-400 font-mono">{mt.date}</td>
+                          <td className="p-1.5 border border-slate-400 text-center font-bold tabular-nums">
+                            {mt.obtained}/{mt.fullMarks} ({mt.percentage}%)
+                          </td>
+                          <td className="p-1.5 border border-slate-400">
+                            {mt.weakSubjects.length > 0 ? mt.weakSubjects.join(', ') : 'সব বিষয় সন্তোষজনক'}
+                          </td>
+                          <td className="p-1.5 border border-slate-400 font-bold">{mt.tierLabel}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            )}
 
             {/* 🟢 ২. মূল্যায়ন বিবরণী টেবিল (Chronological Daily Record Table) */}
             <div className="font-sans space-y-1.5">

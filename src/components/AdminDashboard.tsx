@@ -39,7 +39,8 @@ import {
   StaffRecord, 
   EntrepreneurRecord, 
   SyllabusItem, 
-  SCHOOL_CLASSES 
+  SCHOOL_CLASSES,
+  ACADEMY_EXAMS_9
 } from '../types/adminTypes';
 import { TeacherFormData } from '../types';
 import { SchoolLogo } from './SchoolLogo';
@@ -48,6 +49,8 @@ import { AdminAnalyticsDashboard } from './AdminAnalyticsDashboard';
 import { PeriodicEvaluationReportModal } from './PeriodicEvaluationReportModal';
 import { DigitalLibrary } from './DigitalLibrary';
 import { BulkStudentExcelModal } from './BulkStudentExcelModal';
+import { ExamCalendarPanel } from './ExamCalendarPanel';
+import { ScholarshipModelTestPanel } from './ScholarshipModelTestPanel';
 
 const STORAGE_STUDENTS = 'dlma_admin_students_v2';
 const STORAGE_STAFF = 'dlma_admin_staff_v1';
@@ -306,7 +309,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onUpdateTeachers
 }) => {
   // Main Navigation Tabs
-  const [activeTab, setActiveTab] = useState<'students' | 'teachers' | 'staff' | 'entrepreneurs' | 'syllabus' | 'evaluation' | 'analytics' | 'library'>('students');
+  const [activeTab, setActiveTab] = useState<'students' | 'teachers' | 'staff' | 'entrepreneurs' | 'syllabus' | 'evaluation' | 'analytics' | 'library' | 'calendar' | 'model_test'>('students');
 
   // Periodic Evaluation Report Modal State (সাপ্তাহিক, মাসিক, ত্রৈমাসিক ও পরীক্ষা পর্যন্ত)
   const [isPeriodicReportOpen, setIsPeriodicReportOpen] = useState(false);
@@ -1131,7 +1134,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           }`}
         >
           <BookOpen className="w-4 h-4" />
-          <span>৫. ১১ ধাপের সিলেবাস</span>
+          <span>৫. ৯ পরীক্ষার সিলেবাস (পার্বিক ও সাময়িক)</span>
         </button>
 
         <button
@@ -1177,6 +1180,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">
             PDF ও রিসোর্স
           </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('calendar')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs whitespace-nowrap shrink-0 ${
+            activeTab === 'calendar'
+              ? 'bg-slate-900 text-white shadow-md ring-2 ring-slate-400'
+              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <Calendar className="w-4 h-4 text-amber-500" />
+          <span>৯. পরীক্ষা ক্যালেন্ডার (৯ পরীক্ষা)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('model_test')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs whitespace-nowrap shrink-0 ${
+            activeTab === 'model_test'
+              ? 'bg-amber-600 text-white shadow-md ring-2 ring-amber-400'
+              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <Award className="w-4 h-4 text-amber-600" />
+          <span>১০. বৃত্তি ও মডেল টেস্ট প্রস্তুতি</span>
         </button>
       </div>
 
@@ -1933,23 +1960,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       )}
 
       {/* =========================================================================
-          TAB 5: SYLLABUS (১১ ধাপের শ্রেণিভিত্তিক সিলেবাস)
+          TAB 5: SYLLABUS (৯ পরীক্ষার বাৎসরিক সিলেবাস: ৬টি পার্বিক + ৩টি সাময়িক/বার্ষিক)
           ========================================================================= */}
       {activeTab === 'syllabus' && (
         <div className="space-y-6">
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-slate-900">
-                  ১১ ধাপের বাৎসরিক পরীক্ষা ও শিক্ষণ সিলেবাস
+                  বাৎসরিক ৯ পরীক্ষার সমন্বিত সিলেবাস (৬টি পার্বিক + ৩টি সাময়িক ও বার্ষিক)
                 </h2>
                 <p className="text-xs text-slate-600 mt-0.5">
-                  প্রতিটি শ্রেণির জন্য তিনটি সাময়িক এবং ছয়টি মিডটার্ম পরীক্ষার সমন্বিত সিলেবাস তৈরি করুন।
+                  ১ম সাময়িক, ২য় সাময়িক ও বার্ষিক প্রতিটি মেয়াদী পরীক্ষার আগে ২টি করে ১ দিনের ১০০ নম্বরের পার্বিক প্রস্তুতিমূলক পরীক্ষা অনুষ্ঠিত হয়।
                 </p>
               </div>
 
-              {/* Class Selector for Syllabus */}
-              <div className="flex items-center gap-2">
+              {/* Class Selector + Calendar Shortcut for Syllabus */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('calendar')}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg cursor-pointer whitespace-nowrap"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                  <span>ক্যালেন্ডারে ৯ পরীক্ষার তারিখ দেখুন</span>
+                </button>
                 <label className="text-xs font-bold text-slate-700">শ্রেণি পরিবর্তন:</label>
                 <select
                   value={selectedSyllabusClass}
@@ -1990,11 +2025,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {syllabusSavedMsg && (
             <div className="p-3 bg-emerald-50 border border-emerald-400 text-emerald-800 text-xs font-bold rounded-xl flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>{selectedSyllabusClass} এর ১১ ধাপের সিলেবাস সফলভাবে সংরক্ষিত হয়েছে!</span>
+              <span>{selectedSyllabusClass} এর ৯ পরীক্ষার সিলেবাস সফলভাবে সংরক্ষিত হয়েছে!</span>
             </div>
           )}
 
-          {/* 11 Steps Form */}
+          {/* 9 Exams Form in 3 Term Groups */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -2006,146 +2041,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
             className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              {/* ধাপ ২: ১ম সাময়িক পরীক্ষা */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1.5">
-                <label className="block font-bold text-slate-800">
-                  ২। ১ম সাময়িক পরীক্ষার পূর্ণাঙ্গ সিলেবাস
-                </label>
-                <textarea
-                  rows={3}
-                  value={currentSyllabus.term1Syllabus}
-                  onChange={(e) => setCurrentSyllabus({ ...currentSyllabus, term1Syllabus: e.target.value })}
-                  placeholder="প্রথম সাময়িক পরীক্ষার বিষয়ভিত্তিক সিলেবাস..."
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
+            {(['১ম সাময়িক পর্ব', '২য় সাময়িক পর্ব', 'বার্ষিক পর্ব'] as const).map((groupName) => (
+              <div key={groupName} className="space-y-3">
+                <h3 className="text-sm font-bold text-slate-900 border-b border-slate-200 pb-1.5">
+                  {groupName}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                  {ACADEMY_EXAMS_9.filter((ex) => ex.termGroup === groupName).map((exam) => (
+                    <div
+                      key={exam.id}
+                      className={`p-4 rounded-xl border space-y-1.5 ${
+                        exam.category === 'term'
+                          ? 'bg-indigo-50/50 border-indigo-200'
+                          : 'bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <label className="block font-bold text-slate-900">
+                        {exam.order}। {exam.label}
+                      </label>
+                      <p className="text-[11px] text-slate-500">{exam.description}</p>
+                      <textarea
+                        rows={3}
+                        value={currentSyllabus[exam.syllabusField] || ''}
+                        onChange={(e) =>
+                          setCurrentSyllabus({
+                            ...currentSyllabus,
+                            [exam.syllabusField]: e.target.value
+                          })
+                        }
+                        placeholder={`${exam.shortLabel} এর বিষয়ভিত্তিক পাঠ...`}
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
+            ))}
 
-              {/* ধাপ ৩: প্রথম মিডটার্ম (১ম পর্ব) */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1.5">
-                <label className="block font-bold text-slate-800">
-                  ৩। প্রথম মিডটার্ম পরীক্ষার সিলেবাস (১ম পর্ব)
-                </label>
-                <textarea
-                  rows={3}
-                  value={currentSyllabus.midterm1_1Syllabus}
-                  onChange={(e) => setCurrentSyllabus({ ...currentSyllabus, midterm1_1Syllabus: e.target.value })}
-                  placeholder="১ম পর্বের প্রথম মিডটার্ম সিলেবাস..."
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              {/* ধাপ ৪: দ্বিতীয় মিডটার্ম (১ম পর্ব) */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1.5">
-                <label className="block font-bold text-slate-800">
-                  ৪। দ্বিতীয় মিডটার্ম পরীক্ষার সিলেবাস (১ম পর্ব)
-                </label>
-                <textarea
-                  rows={3}
-                  value={currentSyllabus.midterm1_2Syllabus}
-                  onChange={(e) => setCurrentSyllabus({ ...currentSyllabus, midterm1_2Syllabus: e.target.value })}
-                  placeholder="১ম পর্বের দ্বিতীয় মিডটার্ম সিলেবাস..."
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              {/* ধাপ ৫: ২য় সাময়িক পরীক্ষা */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1.5">
-                <label className="block font-bold text-slate-800">
-                  ৫। ২য় সাময়িক পরীক্ষার পূর্ণাঙ্গ সিলেবাস
-                </label>
-                <textarea
-                  rows={3}
-                  value={currentSyllabus.term2Syllabus}
-                  onChange={(e) => setCurrentSyllabus({ ...currentSyllabus, term2Syllabus: e.target.value })}
-                  placeholder="দ্বিতীয় সাময়িক পরীক্ষার সিলেবাস..."
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              {/* ধাপ ৬: প্রথম মিডটার্ম (২য় পর্ব) */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1.5">
-                <label className="block font-bold text-slate-800">
-                  ৬। প্রথম মিডটার্ম পরীক্ষার সিলেবাস (২য় পর্ব)
-                </label>
-                <textarea
-                  rows={3}
-                  value={currentSyllabus.midterm2_1Syllabus}
-                  onChange={(e) => setCurrentSyllabus({ ...currentSyllabus, midterm2_1Syllabus: e.target.value })}
-                  placeholder="২য় পর্বের প্রথম মিডটার্ম সিলেবাস..."
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              {/* ধাপ ৭: দ্বিতীয় মিডটার্ম (২য় পর্ব) */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1.5">
-                <label className="block font-bold text-slate-800">
-                  ৭। দ্বিতীয় মিডটার্ম পরীক্ষার সিলেবাস (২য় পর্ব)
-                </label>
-                <textarea
-                  rows={3}
-                  value={currentSyllabus.midterm2_2Syllabus}
-                  onChange={(e) => setCurrentSyllabus({ ...currentSyllabus, midterm2_2Syllabus: e.target.value })}
-                  placeholder="২য় পর্বের দ্বিতীয় মিডটার্ম সিলেবাস..."
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              {/* ধাপ ৮: ৩য় সাময়িক / বার্ষিক */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1.5">
-                <label className="block font-bold text-slate-800">
-                  ৮। বার্ষিক / ৩য় সাময়িক পরীক্ষার সিলেবাস
-                </label>
-                <textarea
-                  rows={3}
-                  value={currentSyllabus.term3Syllabus}
-                  onChange={(e) => setCurrentSyllabus({ ...currentSyllabus, term3Syllabus: e.target.value })}
-                  placeholder="বার্ষিক পরীক্ষার সিলেবাস..."
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              {/* ধাপ ৯: প্রথম মিডটার্ম (চূড়ান্ত পর্ব) */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1.5">
-                <label className="block font-bold text-slate-800">
-                  ৯। প্রথম মিডটার্ম পরীক্ষার সিলেবাস (চূড়ান্ত পর্ব)
-                </label>
-                <textarea
-                  rows={3}
-                  value={currentSyllabus.midterm3_1Syllabus}
-                  onChange={(e) => setCurrentSyllabus({ ...currentSyllabus, midterm3_1Syllabus: e.target.value })}
-                  placeholder="চূড়ান্ত পর্বের প্রথম মিডটার্ম সিলেবাস..."
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              {/* ধাপ ১০: দ্বিতীয় মিডটার্ম (চূড়ান্ত পর্ব) */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1.5">
-                <label className="block font-bold text-slate-800">
-                  ১০। দ্বিতীয় মিডটার্ম পরীক্ষার সিলেবাস (চূড়ান্ত পর্ব)
-                </label>
-                <textarea
-                  rows={3}
-                  value={currentSyllabus.midterm3_2Syllabus}
-                  onChange={(e) => setCurrentSyllabus({ ...currentSyllabus, midterm3_2Syllabus: e.target.value })}
-                  placeholder="চূড়ান্ত পর্বের দ্বিতীয় মিডটার্ম সিলেবাস..."
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              {/* ধাপ ১১: বিশেষ নির্দেশনা ও নোট */}
-              <div className="bg-purple-50/70 p-4 rounded-xl border border-purple-200 space-y-1.5 md:col-span-2">
-                <label className="block font-bold text-purple-950">
-                  ১১। বিশেষ নির্দেশনা, পরীক্ষার মানবন্টন ও শিক্ষণ নোট
-                </label>
-                <textarea
-                  rows={2}
-                  value={currentSyllabus.notes || ''}
-                  onChange={(e) => setCurrentSyllabus({ ...currentSyllabus, notes: e.target.value })}
-                  placeholder="শিক্ষকদের প্রতি বিশেষ পাঠদান নির্দেশনা ও পরীক্ষার মানবন্টন..."
-                  className="w-full p-2.5 bg-white border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
+            {/* বিশেষ নির্দেশনা ও মানবন্টন */}
+            <div className="bg-purple-50/70 p-4 rounded-xl border border-purple-200 space-y-1.5 text-xs">
+              <label className="block font-bold text-purple-950">
+                ১০। বিশেষ নির্দেশনা, পরীক্ষার মানবন্টন ও শিক্ষণ নোট
+              </label>
+              <textarea
+                rows={2}
+                value={currentSyllabus.notes || ''}
+                onChange={(e) => setCurrentSyllabus({ ...currentSyllabus, notes: e.target.value })}
+                placeholder="শিক্ষকদের প্রতি বিশেষ পাঠদান নির্দেশনা, পার্বিক ১০০ নম্বরের বিষয় বণ্টন ও পরীক্ষার নীতিমালা..."
+                className="w-full p-2.5 bg-white border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              />
             </div>
 
             <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
@@ -2198,6 +2142,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <DigitalLibrary
           onOpenAdminSyllabus={() => setActiveTab('syllabus')}
         />
+      )}
+
+      {/* =========================================================================
+          TAB 9: EXAM CALENDAR (৯ পরীক্ষা ও মডেল টেস্ট ক্যালেন্ডার)
+          ========================================================================= */}
+      {activeTab === 'calendar' && (
+        <ExamCalendarPanel
+          syllabusList={syllabusList}
+          onOpenSyllabusTab={() => setActiveTab('syllabus')}
+          onOpenModelTestTab={() => setActiveTab('model_test')}
+        />
+      )}
+
+      {/* =========================================================================
+          TAB 10: MODEL TEST & SCHOLARSHIP READINESS (বৃত্তি ও মডেল টেস্ট প্রস্তুতি)
+          ========================================================================= */}
+      {activeTab === 'model_test' && (
+        <ScholarshipModelTestPanel students={students} />
       )}
 
       {/* =========================================================================

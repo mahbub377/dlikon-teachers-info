@@ -17,6 +17,7 @@ import { printViaIsolatedIframe } from './utils/pdfExport';
 import { StudentEvaluationSheet } from './components/StudentEvaluationSheet';
 import { AdminAnalyticsDashboard } from './components/AdminAnalyticsDashboard';
 import { DigitalLibrary } from './components/DigitalLibrary';
+import { TeachersToolsHub } from './components/TeachersToolsHub';
 
 const STORAGE_KEY_CURRENT = 'dlma_current_form_v1';
 const STORAGE_KEY_LIST = 'dlma_teachers_directory_v1';
@@ -294,9 +295,9 @@ export default function App() {
           />
         )}
 
-        {/* ২। টিচারস টুল */}
+        {/* ২। টিচারস টুল (প্রশ্ন মেকার, নোট ক্রিয়েটর, ক্লাস প্রেজেন্টেশন, সিলেবাস মেকার) */}
         {activeTab === 'teachers_tools' && (
-          <ModulePlaceholder module="teachers_tools" title="২। টিচারস টুল ও সহায়িকা" />
+          <TeachersToolsHub initialTool="question" />
         )}
 
         {/* ৩। সেশন প্লান */}
@@ -315,12 +316,12 @@ export default function App() {
 
         {/* ৫। প্রশ্ন মেকার */}
         {activeTab === 'question_maker' && (
-          <ModulePlaceholder module="question_maker" title="৫। প্রশ্ন মেকার ও প্রিন্টার" />
+          <TeachersToolsHub initialTool="question" />
         )}
 
         {/* ৬। নোট মেকার */}
         {activeTab === 'note_maker' && (
-          <ModulePlaceholder module="note_maker" title="৬। নোট মেকার ও শিক্ষক ডায়েরি" />
+          <TeachersToolsHub initialTool="notes" />
         )}
 
         {/* ৭। নোটিশ বোর্ড */}

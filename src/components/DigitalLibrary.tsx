@@ -778,10 +778,10 @@ export const DigitalLibrary: React.FC<DigitalLibraryProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
                 <div>
                   <h3 className="text-sm font-bold text-slate-900">
-                    একাডেমিক ১১-ধাপের শ্রেণিভিত্তিক সিলেবাস ({selectedClass})
+                    একাডেমিক ৯-পরীক্ষার শ্রেণিভিত্তিক সিলেবাস ({selectedClass})
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    এডমিন হাব থেকে সিঙ্ককৃত বাৎসরিক সাময়িক ও মিডটার্ম পরীক্ষার সিলেবাস
+                    এডমিন হাব থেকে সিঙ্ককৃত বাৎসরিক ৬টি পার্বিক ও ৩টি সাময়িক/বার্ষিক পরীক্ষার সিলেবাস
                   </p>
                 </div>
 
@@ -819,24 +819,24 @@ export const DigitalLibrary: React.FC<DigitalLibraryProps> = ({
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                         <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1">
-                          <div className="font-bold text-slate-900">১ম সাময়িক ও মিডটার্ম</div>
-                          <p className="text-slate-700"><strong>সাময়িক:</strong> {syl.term1Syllabus || '—'}</p>
-                          <p className="text-slate-600"><strong>মিডটার্ম ১:</strong> {syl.midterm1_1Syllabus || '—'}</p>
-                          <p className="text-slate-600"><strong>মিডটার্ম ২:</strong> {syl.midterm1_2Syllabus || '—'}</p>
+                          <div className="font-bold text-slate-900">১ম সাময়িক পর্ব</div>
+                          <p className="text-slate-600"><strong>১. ১ম পার্বিক (১ম সাময়িক):</strong> {syl.midterm1_1Syllabus || '—'}</p>
+                          <p className="text-slate-600"><strong>২. ২য় পার্বিক (১ম সাময়িক):</strong> {syl.midterm1_2Syllabus || '—'}</p>
+                          <p className="text-slate-800"><strong>৩. প্রথম সাময়িক (মেয়াদী):</strong> {syl.term1Syllabus || '—'}</p>
                         </div>
 
                         <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1">
-                          <div className="font-bold text-slate-900">২য় সাময়িক ও মিডটার্ম</div>
-                          <p className="text-slate-700"><strong>সাময়িক:</strong> {syl.term2Syllabus || '—'}</p>
-                          <p className="text-slate-600"><strong>মিডটার্ম ১:</strong> {syl.midterm2_1Syllabus || '—'}</p>
-                          <p className="text-slate-600"><strong>মিডটার্ম ২:</strong> {syl.midterm2_2Syllabus || '—'}</p>
+                          <div className="font-bold text-slate-900">২য় সাময়িক পর্ব</div>
+                          <p className="text-slate-600"><strong>৪. ১ম পার্বিক (২য় সাময়িক):</strong> {syl.midterm2_1Syllabus || '—'}</p>
+                          <p className="text-slate-600"><strong>৫. ২য় পার্বিক (২য় সাময়িক):</strong> {syl.midterm2_2Syllabus || '—'}</p>
+                          <p className="text-slate-800"><strong>৬. দ্বিতীয় সাময়িক (মেয়াদী):</strong> {syl.term2Syllabus || '—'}</p>
                         </div>
 
                         <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1">
-                          <div className="font-bold text-slate-900">বার্ষিক / ৩য় সাময়িক</div>
-                          <p className="text-slate-700"><strong>বার্ষিক:</strong> {syl.term3Syllabus || '—'}</p>
-                          <p className="text-slate-600"><strong>মিডটার্ম ১:</strong> {syl.midterm3_1Syllabus || '—'}</p>
-                          <p className="text-slate-600"><strong>মিডটার্ম ২:</strong> {syl.midterm3_2Syllabus || '—'}</p>
+                          <div className="font-bold text-slate-900">বার্ষিক পর্ব</div>
+                          <p className="text-slate-600"><strong>৭. ১ম পার্বিক (বার্ষিক):</strong> {syl.midterm3_1Syllabus || '—'}</p>
+                          <p className="text-slate-600"><strong>৮. ২য় পার্বিক (বার্ষিক):</strong> {syl.midterm3_2Syllabus || '—'}</p>
+                          <p className="text-slate-800"><strong>৯. বার্ষিক পরীক্ষা (মেয়াদী):</strong> {syl.term3Syllabus || '—'}</p>
                         </div>
                       </div>
 

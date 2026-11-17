@@ -72,9 +72,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'teachers_tools',
       label: '২। টিচারস টুল',
-      subLabel: 'দৈনিক শিক্ষক সহায়িকা ও ক্যালকুলেটর',
+      subLabel: 'প্রশ্ন মেকার, নোট, প্রেজেন্টেশন ও সিলেবাস মেকার',
       icon: Wrench,
       color: 'text-blue-600 bg-blue-50',
+      badge: '৪টি টুল',
     },
     {
       id: 'session_plan',

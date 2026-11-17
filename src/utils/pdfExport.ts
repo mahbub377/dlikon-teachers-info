@@ -128,7 +128,14 @@ async function captureElement(element: HTMLElement): Promise<HTMLCanvasElement> 
         });
         const fallbackStyle = clonedDoc.createElement('style');
         fallbackStyle.textContent = `
-          * { font-family: 'Hind Siliguri', -apple-system, sans-serif !important; box-sizing: border-box !important; }
+          @font-face {
+            font-family: 'Kalpurush';
+            src: url('${window.location.origin}/fonts/kalpurush.woff2') format('woff2'),
+                 url('${window.location.origin}/fonts/kalpurush.ttf') format('truetype');
+            font-weight: 100 900;
+            font-style: normal;
+          }
+          * { font-family: 'Kalpurush', -apple-system, sans-serif !important; box-sizing: border-box !important; }
           body, html { background: #ffffff !important; color: #000000 !important; }
           table { border-collapse: collapse !important; width: 100% !important; }
           td, th { border: 1px solid #1e293b !important; }
@@ -381,17 +388,22 @@ export function printViaIsolatedIframe(elementId: string = 'printable-two-page-a
           <title>ডি-লিকন মডেল একাডেমী - শিক্ষক তথ্য ফরম (২ পাতা)</title>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <link rel="preconnect" href="https://fonts.googleapis.com">
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-          <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
           ${stylesHtml}
           <style>
+            @font-face {
+              font-family: 'Kalpurush';
+              src: url('${window.location.origin}/fonts/kalpurush.woff2') format('woff2'),
+                   url('${window.location.origin}/fonts/kalpurush.ttf') format('truetype');
+              font-weight: 100 900;
+              font-style: normal;
+            }
             @page {
               size: A4 portrait;
               margin: 6mm 8mm 6mm 8mm;
             }
             * {
               box-sizing: border-box;
+              font-family: 'Kalpurush', -apple-system, sans-serif !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
@@ -400,7 +412,7 @@ export function printViaIsolatedIframe(elementId: string = 'printable-two-page-a
               padding: 0 !important;
               background: #ffffff !important;
               color: #000000 !important;
-              font-family: 'Hind Siliguri', -apple-system, sans-serif !important;
+              font-family: 'Kalpurush', -apple-system, sans-serif !important;
               width: 100% !important;
             }
             #printable-two-page-area {
