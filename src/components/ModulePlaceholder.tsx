@@ -1,39 +1,30 @@
 import React, { useState } from 'react';
-import { 
-  Users, 
-  CalendarCheck, 
-  HelpCircle, 
-  FileText, 
-  Bell, 
-  Clock, 
+import {
+  Users,
+  CalendarCheck,
+  HelpCircle,
+  FileText,
+  Bell,
+  Clock,
   Wrench,
-  Plus,
-  Trash2,
-  CheckCircle2,
-  AlertCircle,
   Sparkles,
-  Download,
   Printer
 } from 'lucide-react';
 import { ActiveTab } from '../types';
+import { WeakStudentsTracker } from './WeakStudentsTracker';
 
 interface ModulePlaceholderProps {
   module: ActiveTab;
   title: string;
+  onNavigateToAdmin?: () => void;
 }
 
-export const ModulePlaceholder: React.FC<ModulePlaceholderProps> = ({ module, title }) => {
-  // 1. Weak Students Tracker state
-  const [weakStudents, setWeakStudents] = useState<{ id: string; name: string; roll: string; className: string; subject: string; issue: string; solved: boolean }[]>([
-    { id: '1', name: 'মোঃ রাহাত হোসেন', roll: '০৫', className: '৫ম শ্রেণি', subject: 'গণিত', issue: 'ভগ্নাংশের যোগ-বিয়োগ বুঝতে সমস্যা', solved: false },
-    { id: '2', name: 'সুমাইয়া আক্তার', roll: '১২', className: '৬ষ্ঠ শ্রেণি', subject: 'ইংরেজি', issue: 'Tense এর প্রয়োগে অস্পষ্টতা', solved: true },
-    { id: '3', name: 'আসিফ মাহমুদ', roll: '১৮', className: '৪র্থ শ্রেণি', subject: 'বাংলা', issue: 'যুক্তবর্ণ উচ্চারণে জড়তা', solved: false },
-  ]);
-  const [newStudentName, setNewStudentName] = useState('');
-  const [newStudentRoll, setNewStudentRoll] = useState('');
-  const [newStudentClass, setNewStudentClass] = useState('৫ম শ্রেণি');
-  const [newStudentSubject, setNewStudentSubject] = useState('গণিত');
-  const [newStudentIssue, setNewStudentIssue] = useState('');
+export const ModulePlaceholder: React.FC<ModulePlaceholderProps> = ({
+  module,
+  title,
+  onNavigateToAdmin
+}) => {
+  const [noteSavedToast, setNoteSavedToast] = useState(false);
 
   // 2. Question Maker state
   const [examName, setExamName] = useState('১ম সাময়িক মূল্যায়ন পরীক্ষা - ২০২৬');
@@ -49,38 +40,17 @@ export const ModulePlaceholder: React.FC<ModulePlaceholderProps> = ({ module, ti
   const [newQText, setNewQText] = useState('');
 
   // 3. Notice Board state
-  const [notices, setNotices] = useState([
+  const [notices] = useState([
     { id: '1', title: 'আসন্ন সাময়িক পরীক্ষার লেসন প্ল্যান জমার নির্দেশ', date: '২০ সেপ্টেম্বর ২০২৬', priority: 'জরুরী', text: 'সকল সম্মানিত শিক্ষক-শিক্ষিকাকে আগামী মঙ্গলবারের মধ্যে নিজ নিজ শ্রেণির সাপ্তাহিক লেসন প্ল্যান প্রধান শিক্ষকের নিকট জমা দেওয়ার অনুরোধ করা হলো।' },
     { id: '2', title: 'ডিজিটাল হাজিরা ও বায়োমেট্রিক আপডেট', date: '১৮ সেপ্টেম্বর ২০২৬', priority: 'সাধারণ', text: 'প্রতিদিন সকাল ৮:৪৫ মিনিটের মধ্যে সকল শিক্ষককে ডিজিটাল ডিভাইসে উপস্থিতি নিশ্চিত করতে বলা হলো।' },
   ]);
 
   // 4. Session Plan state
-  const [plans, setPlans] = useState([
+  const [plans] = useState([
     { id: '1', period: '১ম পিরিয়ড (৯:০০-৯:৪৫)', subject: 'বাংলা', className: '৬ষ্ঠ শ্রেণি', topic: 'কবিতা: মানুষ জাতি', method: 'দলীয় আলোচনা ও আবৃত্তি', aids: 'চার্ট পেপার ও প্রজেক্টর' },
     { id: '2', period: '২য় পিরিয়ড (৯:৪৫-১০:৩০)', subject: 'ইংরেজি', className: '৭ম শ্রেণি', topic: 'Grammar: Parts of Speech', method: 'বোর্ড ওয়ার্ক ও কুইজ', aids: 'ফ্ল্যাশ কার্ড' },
     { id: '3', period: '৩য় পিরিয়ড (১০:৩০-১১:১৫)', subject: 'গণিত', className: '৫ম শ্রেণি', topic: 'অধ্যায় ৫: গুণনীয়ক ও গুণিতক', method: 'বাস্তব উপকরণ দিয়ে অনুশীলন', aids: 'মার্বেল ও ব্লক' },
   ]);
-
-  // Handle Add Student
-  const handleAddWeakStudent = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newStudentName.trim()) return;
-    setWeakStudents([
-      ...weakStudents,
-      {
-        id: Date.now().toString(),
-        name: newStudentName,
-        roll: newStudentRoll || '—',
-        className: newStudentClass,
-        subject: newStudentSubject,
-        issue: newStudentIssue || 'নির্দিষ্ট পাঠে সহায়তার প্রয়োজন',
-        solved: false,
-      },
-    ]);
-    setNewStudentName('');
-    setNewStudentRoll('');
-    setNewStudentIssue('');
-  };
 
   // Render content according to module
   return (
@@ -109,123 +79,13 @@ export const ModulePlaceholder: React.FC<ModulePlaceholderProps> = ({ module, ti
         </button>
       </div>
 
-      {/* 1. আজকের দুর্বল শিক্ষার্থী (Weak Students Module) */}
+      {/* 1. আজকের দুর্বল শিক্ষার্থী (Smart Class + Roll Dropdown Weak Students Tracker) */}
       {module === 'weak_students' && (
-        <div className="space-y-6">
+        <div className="space-y-5">
           <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-xs text-rose-800">
-            <strong>বিশেষ নির্দেশিকা:</strong> ক্লাসে যেসকল শিক্ষার্থী পড়া বুঝতে পিছিয়ে পড়েছে বা হোমওয়ার্কে অসুবিধা বোধ করছে তাদের তথ্য তালিকাভুক্ত করুন এবং পরবর্তী ক্লাসে অতিরিক্ত ৫-১০ মিনিট ব্যক্তিগত যত্ন প্রদান করুন।
+            <strong>বিশেষ নির্দেশিকা:</strong> শ্রেণি ও রোল নির্বাচন করে পড়া বুঝতে পিছিয়ে পড়া শিক্ষার্থীদের দ্রুত তালিকাভুক্ত করুন এবং পরবর্তী ক্লাসে অতিরিক্ত ৫-১০ মিনিট ব্যক্তিগত যত্ন প্রদান করুন।
           </div>
-
-          {/* Input Form */}
-          <form onSubmit={handleAddWeakStudent} className="no-print bg-white p-5 rounded-xl border border-slate-200 shadow-xs grid grid-cols-1 sm:grid-cols-5 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">শিক্ষার্থীর নাম</label>
-              <input
-                type="text"
-                value={newStudentName}
-                onChange={(e) => setNewStudentName(e.target.value)}
-                placeholder="যেমন: তানভীর রহমান"
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">রোল ও শ্রেণি</label>
-              <div className="grid grid-cols-2 gap-1">
-                <input
-                  type="text"
-                  value={newStudentRoll}
-                  onChange={(e) => setNewStudentRoll(e.target.value)}
-                  placeholder="রোল"
-                  className="w-full text-xs px-2 py-2 border border-slate-300 rounded-lg"
-                />
-                <input
-                  type="text"
-                  value={newStudentClass}
-                  onChange={(e) => setNewStudentClass(e.target.value)}
-                  placeholder="শ্রেণি"
-                  className="w-full text-xs px-2 py-2 border border-slate-300 rounded-lg"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">বিষয়</label>
-              <input
-                type="text"
-                value={newStudentSubject}
-                onChange={(e) => setNewStudentSubject(e.target.value)}
-                placeholder="যেমন: ইংরেজি / গণিত"
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">সমস্যা / দুর্বলতা</label>
-              <input
-                type="text"
-                value={newStudentIssue}
-                onChange={(e) => setNewStudentIssue(e.target.value)}
-                placeholder="কোন টপিকে সমস্যা?"
-                className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg"
-              />
-            </div>
-            <div className="flex items-end">
-              <button
-                type="submit"
-                className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs rounded-lg shadow-xs cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                তালিকায় যুক্ত করুন
-              </button>
-            </div>
-          </form>
-
-          {/* List Table */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
-                <tr>
-                  <th className="p-3">অবস্থা</th>
-                  <th className="p-3">শিক্ষার্থীর নাম</th>
-                  <th className="p-3">শ্রেণি ও রোল</th>
-                  <th className="p-3">বিষয়</th>
-                  <th className="p-3">নির্দিষ্ট সমস্যা / প্রতিকারমূলক লক্ষ্য</th>
-                  <th className="p-3 text-right no-print">অ্যাকশন</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {weakStudents.map((st) => (
-                  <tr key={st.id} className={st.solved ? 'bg-emerald-50/40 text-slate-400' : 'hover:bg-slate-50'}>
-                    <td className="p-3">
-                      <button
-                        onClick={() => {
-                          setWeakStudents(weakStudents.map(s => s.id === st.id ? { ...s, solved: !s.solved } : s));
-                        }}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium cursor-pointer ${
-                          st.solved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {st.solved ? <CheckCircle2 className="w-3 h-3 text-emerald-600" /> : <AlertCircle className="w-3 h-3 text-amber-600" />}
-                        {st.solved ? 'সমাধান হয়েছে' : 'যত্ন প্রয়োজন'}
-                      </button>
-                    </td>
-                    <td className="p-3 font-semibold text-slate-800">{st.name}</td>
-                    <td className="p-3">{st.className} (রোল: {st.roll})</td>
-                    <td className="p-3 font-medium text-slate-700">{st.subject}</td>
-                    <td className="p-3 text-slate-600">{st.issue}</td>
-                    <td className="p-3 text-right no-print">
-                      <button
-                        onClick={() => setWeakStudents(weakStudents.filter(s => s.id !== st.id))}
-                        className="text-rose-500 hover:text-rose-700 p-1"
-                        title="মুছুন"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <WeakStudentsTracker onOpenBulkUpload={onNavigateToAdmin} />
         </div>
       )}
 
@@ -402,9 +262,17 @@ export const ModulePlaceholder: React.FC<ModulePlaceholderProps> = ({ module, ti
             className="w-full text-xs p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 font-mono"
             defaultValue="১। ৫ম শ্রেণির গণিত ক্লাসে ল.সা.গু সমাধান করানো হয়েছে।&#10;২। ৬ষ্ঠ শ্রেণির ইংরেজি ক্লাসে আগামীকাল ৩টি ভোকাবুলারি কুইজ নেওয়া হবে।&#10;৩। দুর্বল শিক্ষার্থীদের জন্য আগামী বৃহস্পতিবার বিশেষ রিভিশন ক্লাস অনুষ্ঠিত হবে।"
           />
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-3">
+            {noteSavedToast && (
+              <span className="text-xs font-semibold text-emerald-700">
+                নোটটি সফলভাবে সংরক্ষিত হয়েছে!
+              </span>
+            )}
             <button
-              onClick={() => alert('নোটটি সফলভাবে সংরক্ষিত হয়েছে!')}
+              onClick={() => {
+                setNoteSavedToast(true);
+                setTimeout(() => setNoteSavedToast(false), 3000);
+              }}
               className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-xs cursor-pointer"
             >
               নোট সংরক্ষণ করুন

@@ -38,6 +38,7 @@ import { TeacherFormData } from '../types';
 import { SchoolLogo } from './SchoolLogo';
 import { formatBanglaRoll, normalizeClassName, normalizeSection } from './AdminDashboard';
 import { downloadSingleElementAsPdf } from '../utils/pdfExport';
+import { PeriodicEvaluationReportModal } from './PeriodicEvaluationReportModal';
 
 const STORAGE_EVALUATIONS = 'dlma_student_evaluations_v1';
 
@@ -103,6 +104,14 @@ export const StudentEvaluationSheet: React.FC<StudentEvaluationSheetProps> = ({
   } | null>(null);
 
   const [isPrintClassRegister, setIsPrintClassRegister] = useState(false);
+
+  // Periodic Evaluation Report Modal State (সাপ্তাহিক, মাসিক, ত্রৈমাসিক, পরীক্ষা পর্যন্ত)
+  const [periodicReportModalStudent, setPeriodicReportModalStudent] = useState<StudentRecord | null>(null);
+  const [isPeriodicReportModalOpen, setIsPeriodicReportModalOpen] = useState(false);
+
+  // PDF Download States
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState<string | null>(null);
 
   // Filter students belonging to selected class & section
   const currentClassStudents = students
@@ -299,6 +308,48 @@ export const StudentEvaluationSheet: React.FC<StudentEvaluationSheetProps> = ({
     window.print();
   };
 
+  // Direct A4 PDF Download for Parent Evaluation Slip
+  const handleDownloadSlipPdf = async () => {
+    if (!printableSlip) return;
+    setIsDownloadingPdf(true);
+    setPdfProgress('পিডিএফ তৈরি হচ্ছে...');
+    try {
+      const cleanName = printableSlip.student.name.replace(/\s+/g, '_');
+      const filename = `ডি-লিকন_মূল্যায়ন_পত্র_${cleanName}_${printableSlip.evaluation.date}.pdf`;
+      await downloadSingleElementAsPdf(
+        'individual-parent-slip-container',
+        filename,
+        (status) => setPdfProgress(status)
+      );
+    } catch (err) {
+      console.error('PDF download error:', err);
+      alert('পিডিএফ তৈরিতে সমস্যা হয়েছে। সরাসরি প্রিন্ট অপশনটি ব্যবহার করুন।');
+    } finally {
+      setIsDownloadingPdf(false);
+      setPdfProgress(null);
+    }
+  };
+
+  // Direct A4 PDF Download for Class Evaluation Register
+  const handleDownloadRegisterPdf = async () => {
+    setIsDownloadingPdf(true);
+    setPdfProgress('রেজিস্টার পিডিএফ তৈরি হচ্ছে...');
+    try {
+      const filename = `ডি-লিকন_মূল্যায়ন_রেজিস্টার_${selectedClass}_${selectedDate}.pdf`;
+      await downloadSingleElementAsPdf(
+        'class-evaluation-register-container',
+        filename,
+        (status) => setPdfProgress(status)
+      );
+    } catch (err) {
+      console.error('Register PDF download error:', err);
+      alert('পিডিএফ তৈরিতে সমস্যা হয়েছে। সরাসরি প্রিন্ট অপশনটি ব্যবহার করুন।');
+    } finally {
+      setIsDownloadingPdf(false);
+      setPdfProgress(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -336,6 +387,18 @@ export const StudentEvaluationSheet: React.FC<StudentEvaluationSheetProps> = ({
                 <span>তালিকায় ফিরুন</span>
               </button>
             )}
+            <button
+              onClick={() => {
+                setPeriodicReportModalStudent(currentClassStudents[0] || null);
+                setIsPeriodicReportModalOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs rounded-xl shadow-md transition-all cursor-pointer"
+              title="সাপ্তাহিক, মাসিক, ত্রৈমাসিক ও পরীক্ষা পর্যন্ত সার্বিক মূল্যায়ন রিপোর্ট জেনারেটর"
+            >
+              <FileText className="w-4 h-4 text-slate-950" />
+              <span>পর্যাবৃত্ত রিপোর্ট জেনারেটর</span>
+            </button>
+
             <button
               onClick={() => setIsPrintClassRegister(true)}
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-400/40 text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
@@ -782,6 +845,18 @@ export const StudentEvaluationSheet: React.FC<StudentEvaluationSheetProps> = ({
                         <span>অভিভাবক স্লিপ</span>
                       </button>
 
+                      <button
+                        onClick={() => {
+                          setPeriodicReportModalStudent(stu);
+                          setIsPeriodicReportModalOpen(true);
+                        }}
+                        className="w-full inline-flex items-center justify-center gap-1 px-2 py-1 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-[10px] shadow-2xs transition-all cursor-pointer"
+                        title="এই শিক্ষার্থীর সাপ্তাহিক, মাসিক বা পরীক্ষা পর্যন্ত রিপোর্ট জেনারেট করুন"
+                      >
+                        <FileText className="w-3 h-3 text-amber-400" />
+                        <span>পর্যাবৃত্ত রিপোর্ট</span>
+                      </button>
+
                       {onOpenStudentProfile && (
                         <button
                           onClick={() => onOpenStudentProfile(stu)}
@@ -882,6 +957,15 @@ export const StudentEvaluationSheet: React.FC<StudentEvaluationSheetProps> = ({
               </div>
               <div className="flex items-center gap-2">
                 <button
+                  onClick={handleDownloadSlipPdf}
+                  disabled={isDownloadingPdf}
+                  className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5 transition-all disabled:opacity-60"
+                  title="সরাসরি A4 সাইজ PDF ডাউনলোড করুন"
+                >
+                  <Download className="w-4 h-4 text-emerald-200" />
+                  <span>{isDownloadingPdf ? (pdfProgress || 'PDF হচ্ছে...') : 'সরাসরি PDF ডাউনলোড'}</span>
+                </button>
+                <button
                   onClick={handlePrint}
                   className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5"
                 >
@@ -898,7 +982,10 @@ export const StudentEvaluationSheet: React.FC<StudentEvaluationSheetProps> = ({
             </div>
 
             {/* Printable Slip Container (Ink-Friendly, Pure White, Clean Black Borders) */}
-            <div className="bg-white p-6 border-2 border-slate-800 rounded-xl space-y-4 print:border-2 print:border-black print:p-4 text-xs font-serif">
+            <div 
+              id="individual-parent-slip-container"
+              className="bg-white p-6 border-2 border-slate-800 rounded-xl space-y-4 print:border-2 print:border-black print:p-4 text-xs font-serif"
+            >
               {/* Header Banner */}
               <div className="text-center pb-3 border-b-2 border-slate-800">
                 <div className="flex items-center justify-center gap-3 mb-1">
@@ -1096,6 +1183,15 @@ export const StudentEvaluationSheet: React.FC<StudentEvaluationSheetProps> = ({
               </div>
               <div className="flex items-center gap-2">
                 <button
+                  onClick={handleDownloadRegisterPdf}
+                  disabled={isDownloadingPdf}
+                  className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5 transition-all disabled:opacity-60"
+                  title="রেজিস্টার A4 PDF ডাউনলোড করুন"
+                >
+                  <Download className="w-4 h-4 text-emerald-200" />
+                  <span>{isDownloadingPdf ? (pdfProgress || 'PDF হচ্ছে...') : 'রেজিস্টার PDF'}</span>
+                </button>
+                <button
                   onClick={handlePrint}
                   className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5"
                 >
@@ -1112,7 +1208,10 @@ export const StudentEvaluationSheet: React.FC<StudentEvaluationSheetProps> = ({
             </div>
 
             {/* Printable Register Sheet */}
-            <div className="bg-white p-6 border-2 border-slate-800 rounded-xl space-y-4 print:border-none print:p-2 text-xs font-serif">
+            <div 
+              id="class-evaluation-register-container"
+              className="bg-white p-6 border-2 border-slate-800 rounded-xl space-y-4 print:border-none print:p-2 text-xs font-serif"
+            >
               <div className="text-center pb-2 border-b-2 border-slate-800">
                 <h2 className="text-lg font-black text-slate-950">ডি-লিকন মডেল একাডেমী</h2>
                 <p className="text-xs font-bold text-slate-700">দৈনিক শ্রেণিকক্ষ শিক্ষার্থী মূল্যায়ন ও উপস্থিতি রেজিস্টার</p>
@@ -1192,6 +1291,20 @@ export const StudentEvaluationSheet: React.FC<StudentEvaluationSheetProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Periodic Evaluation Report Generator Modal (সাপ্তাহিক, মাসিক, ত্রৈমাসিক, পরীক্ষা পর্যন্ত) */}
+      {isPeriodicReportModalOpen && (
+        <PeriodicEvaluationReportModal
+          students={students}
+          teachers={teachers}
+          defaultClass={selectedClass}
+          initialStudent={periodicReportModalStudent}
+          onClose={() => {
+            setIsPeriodicReportModalOpen(false);
+            setPeriodicReportModalStudent(null);
+          }}
+        />
       )}
     </div>
   );

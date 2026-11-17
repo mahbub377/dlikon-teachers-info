@@ -19,7 +19,9 @@ import {
   ShieldAlert,
   FileSpreadsheet,
   Printer,
-  CheckCircle2
+  CheckCircle2,
+  BarChart3,
+  BookOpen
 } from 'lucide-react';
 import { ActiveTab } from '../types';
 import { SchoolLogo } from './SchoolLogo';
@@ -124,6 +126,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: CheckCircle2,
       color: 'text-emerald-600 bg-emerald-50',
       badge: 'লাইভ ক্লাসরুম',
+    },
+    {
+      id: 'analytics',
+      label: '১০। পারফরম্যান্স গ্রাফ ও এনালিটিক্স',
+      subLabel: 'শিক্ষক উপস্থিতি ও শিক্ষার্থী মূল্যায়ন ভিজ্যুয়ালাইজেশন',
+      icon: BarChart3,
+      color: 'text-teal-600 bg-teal-50',
+      badge: 'Recharts',
+    },
+    {
+      id: 'library',
+      label: '১১। ডিজিটাল লাইব্রেরী',
+      subLabel: 'শ্রেণিভিত্তিক বই PDF, সিলেবাস, প্রশ্ন ব্যাংক, নোট, গাইড ও লিংক',
+      icon: BookOpen,
+      color: 'text-indigo-600 bg-indigo-50',
+      badge: 'প্লে-১০ম',
     },
   ];
 

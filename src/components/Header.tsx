@@ -12,7 +12,8 @@ import {
   ShieldAlert,
   BookOpen,
   Download,
-  FileText
+  FileText,
+  BarChart3
 } from 'lucide-react';
 import { SchoolLogo } from './SchoolLogo';
 import { ActiveTab } from '../types';
@@ -130,6 +131,36 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
               <span className="hidden sm:inline">মূল্যায়ন সীট</span>
+            </button>
+
+            {/* DIRECT ACCESS: এনালিটিক্স ও চার্ট (Recharts) */}
+            <button
+              id="btn-analytics-nav"
+              onClick={() => setActiveTab('analytics')}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs border whitespace-nowrap shrink-0 ${
+                activeTab === 'analytics'
+                  ? 'bg-teal-700 text-white border-teal-800 ring-2 ring-teal-400'
+                  : 'bg-teal-50 hover:bg-teal-100 text-teal-900 border-teal-300'
+              }`}
+              title="শিক্ষক উপস্থিতি ও শিক্ষার্থী মূল্যায়ন পারফরম্যান্স গ্রাফ (Recharts)"
+            >
+              <BarChart3 className="w-3.5 h-3.5 text-teal-700" />
+              <span className="hidden md:inline">এনালিটিক্স</span>
+            </button>
+
+            {/* DIRECT ACCESS: ডিজিটাল লাইব্রেরী */}
+            <button
+              id="btn-library-nav"
+              onClick={() => setActiveTab('library')}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs border whitespace-nowrap shrink-0 ${
+                activeTab === 'library'
+                  ? 'bg-indigo-700 text-white border-indigo-800 ring-2 ring-indigo-400'
+                  : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border-indigo-300'
+              }`}
+              title="ডিজিটাল লাইব্রেরী — পাঠ্যবই PDF, সিলেবাস, প্রশ্ন ব্যাংক, নোট, গাইড ও রেফারেন্স লিংক"
+            >
+              <BookOpen className={`w-3.5 h-3.5 ${activeTab === 'library' ? 'text-white' : 'text-indigo-700'}`} />
+              <span className="hidden sm:inline">লাইব্রেরী</span>
             </button>
 
             {activeTab === 'registration' && (

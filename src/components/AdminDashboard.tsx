@@ -30,7 +30,9 @@ import {
   AlertCircle,
   Sparkles,
   ListOrdered,
-  RefreshCw
+  RefreshCw,
+  BarChart3,
+  Layers
 } from 'lucide-react';
 import { 
   StudentRecord, 
@@ -42,6 +44,10 @@ import {
 import { TeacherFormData } from '../types';
 import { SchoolLogo } from './SchoolLogo';
 import { StudentEvaluationSheet } from './StudentEvaluationSheet';
+import { AdminAnalyticsDashboard } from './AdminAnalyticsDashboard';
+import { PeriodicEvaluationReportModal } from './PeriodicEvaluationReportModal';
+import { DigitalLibrary } from './DigitalLibrary';
+import { BulkStudentExcelModal } from './BulkStudentExcelModal';
 
 const STORAGE_STUDENTS = 'dlma_admin_students_v2';
 const STORAGE_STAFF = 'dlma_admin_staff_v1';
@@ -300,7 +306,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onUpdateTeachers
 }) => {
   // Main Navigation Tabs
-  const [activeTab, setActiveTab] = useState<'students' | 'teachers' | 'staff' | 'entrepreneurs' | 'syllabus' | 'evaluation'>('students');
+  const [activeTab, setActiveTab] = useState<'students' | 'teachers' | 'staff' | 'entrepreneurs' | 'syllabus' | 'evaluation' | 'analytics' | 'library'>('students');
+
+  // Periodic Evaluation Report Modal State (সাপ্তাহিক, মাসিক, ত্রৈমাসিক ও পরীক্ষা পর্যন্ত)
+  const [isPeriodicReportOpen, setIsPeriodicReportOpen] = useState(false);
+  const [periodicReportStudent, setPeriodicReportStudent] = useState<StudentRecord | null>(null);
 
   // ==========================================
   // 1. STUDENTS STATE (শ্রেণিভিত্তিক আপলোড: প্লে-১০ম)
@@ -327,6 +337,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Selected Class for viewing/filtering
   const [selectedClassFilter, setSelectedClassFilter] = useState<string>('সকল শ্রেণি');
   const [studentSearch, setStudentSearch] = useState('');
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   // ==========================================
   // 2. STAFF STATE (সকল কর্মচারী)
@@ -1137,6 +1148,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             ক্লাসরুম লাইভ
           </span>
         </button>
+
+        <button
+          onClick={() => setActiveTab('analytics')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs ${
+            activeTab === 'analytics'
+              ? 'bg-teal-700 text-white shadow-md ring-2 ring-teal-400'
+              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4 text-teal-400" />
+          <span>৭. এনালিটিক্স ও চার্ট (Recharts)</span>
+          <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-800">
+            লাইভ মেট্রিক্স
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('library')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs ${
+            activeTab === 'library'
+              ? 'bg-indigo-700 text-white shadow-md ring-2 ring-indigo-400'
+              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <BookOpen className="w-4 h-4 text-indigo-500" />
+          <span>৮. ডিজিটাল লাইব্রেরী</span>
+          <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">
+            PDF ও রিসোর্স
+          </span>
+        </button>
       </div>
 
       {/* =========================================================================
@@ -1201,6 +1242,66 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <Upload className="w-4 h-4 text-slate-950" />
                   <span>[{selectedUploadClass}] এর ফাইল আপলোড</span>
                 </button>
+
+                <button
+                  id="btn-bulk-excel-upload"
+                  onClick={() => setIsBulkUploadOpen(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer whitespace-nowrap"
+                  title="সকল শ্রেণির আলাদা আলাদা এক্সেল ফাইল একসাথে সিলেক্ট করে আপলোড করুন"
+                >
+                  <Layers className="w-4 h-4 text-amber-400" />
+                  <span>বাল্ক আপলোড (সকল শ্রেণি একসাথে)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 12-Class Live Upload Status Matrix (প্লে - ১০ম শ্রেণি) */}
+            <div className="mt-4 pt-4 border-t border-slate-200">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5 text-xs">
+                <span className="font-bold text-slate-800">
+                  শ্রেণিভিত্তিক ডেটা আপলোড অবস্থা (মোট {SCHOOL_CLASSES.filter(cls => students.some(s => normalizeClassName(s.className) === cls)).length} / {SCHOOL_CLASSES.length} শ্রেণি আপলোডকৃত · {students.length} জন শিক্ষার্থী)
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  যেকোনো শ্রেণিতে ক্লিক করে সরাসরি ওই শ্রেণির ফাইল আপলোড করতে পারেন
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                {SCHOOL_CLASSES.map(cls => {
+                  const cnt = students.filter(s => normalizeClassName(s.className) === cls).length;
+                  return (
+                    <div
+                      key={cls}
+                      onClick={() => {
+                        setSelectedUploadClass(cls);
+                        setSelectedClassFilter(cls);
+                      }}
+                      className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-1.5 cursor-pointer transition-colors ${
+                        cnt > 0
+                          ? 'bg-emerald-50/70 border-emerald-200 hover:border-emerald-400 text-emerald-950'
+                          : 'bg-slate-50 border-slate-200 hover:border-amber-400 text-slate-600'
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <div className="font-bold truncate">{cls}</div>
+                        <div className="text-[10.5px] font-mono tabular-nums">
+                          {cnt > 0 ? `${cnt} জন` : 'খালি (০)'}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          setSelectedUploadClass(cls);
+                          setTimeout(() => studentFileRef.current?.click(), 50);
+                        }}
+                        className="p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-amber-50 hover:border-amber-400 text-slate-700 shrink-0 cursor-pointer"
+                        title={`${cls}-এর এক্সেল ফাইল আপলোড করুন`}
+                      >
+                        <Upload className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -2076,6 +2177,60 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       )}
 
       {/* =========================================================================
+          TAB 7: RECHARTS DATA VISUALIZATION (শিক্ষক ও শিক্ষার্থী পারফরম্যান্স চার্ট)
+          ========================================================================= */}
+      {activeTab === 'analytics' && (
+        <AdminAnalyticsDashboard
+          students={students}
+          teachers={teachers}
+          onOpenEvaluationSheet={() => setActiveTab('evaluation')}
+          onOpenPeriodicReportModal={() => {
+            setPeriodicReportStudent(students[0] || null);
+            setIsPeriodicReportOpen(true);
+          }}
+        />
+      )}
+
+      {/* =========================================================================
+          TAB 8: DIGITAL LIBRARY (পাঠ্যবই PDF, সিলেবাস, প্রশ্ন ব্যাংক, নোট, গাইড, লিংক)
+          ========================================================================= */}
+      {activeTab === 'library' && (
+        <DigitalLibrary
+          onOpenAdminSyllabus={() => setActiveTab('syllabus')}
+        />
+      )}
+
+      {/* =========================================================================
+          BULK MULTI-CLASS EXCEL UPLOAD MODAL (সকল শ্রেণির ফাইল একসাথে)
+          ========================================================================= */}
+      <BulkStudentExcelModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        existingStudents={students}
+        normalizeStudents={normalizeClassAndRolls}
+        onImportCompleted={(merged, summaryMsg) => {
+          saveStudents(merged);
+          setUploadStatus(summaryMsg);
+          setTimeout(() => setUploadStatus(null), 6000);
+        }}
+      />
+
+      {/* =========================================================================
+          PERIODIC EVALUATION REPORT GENERATOR MODAL (সাপ্তাহিক, মাসিক, ত্রৈমাসিক, পরীক্ষা)
+          ========================================================================= */}
+      {isPeriodicReportOpen && (
+        <PeriodicEvaluationReportModal
+          students={students}
+          teachers={teachers}
+          initialStudent={periodicReportStudent}
+          onClose={() => {
+            setIsPeriodicReportOpen(false);
+            setPeriodicReportStudent(null);
+          }}
+        />
+      )}
+
+      {/* =========================================================================
           INTERACTIVE DETAIL MODAL / DRAWER (ছবি ও স্বাক্ষরসহ বিস্তারিত ফরম)
           "পরবর্তীতে আমরা আলাদাভাবে সেই লিস্ট ধরে ছবি ও স্বাক্ষরসহ ডিটেইল তথ্য আপলোড করার ফরম অনুসরন করব।"
           ========================================================================= */}
@@ -2361,16 +2516,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               <div className="flex items-center gap-2">
                 {activeProfileModal.type === 'student' && (
-                  <button
-                    onClick={() => {
-                      setActiveTab('evaluation');
-                      setActiveProfileModal(null);
-                    }}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
-                  >
-                    <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                    <span>মূল্যায়ন সীট ও অভিভাবক স্লিপ</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        setPeriodicReportStudent(activeProfileModal.data);
+                        setIsPeriodicReportOpen(true);
+                        setActiveProfileModal(null);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-md cursor-pointer"
+                      title="সাপ্তাহিক, মাসিক, ত্রৈমাসিক ও পরীক্ষা পর্যন্ত রিপোর্ট জেনারেটর"
+                    >
+                      <FileText className="w-4 h-4 text-slate-950" />
+                      <span>পর্যাবৃত্ত রিপোর্ট (সাপ্তাহিক/মাসিক/পরীক্ষা)</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActiveTab('evaluation');
+                        setActiveProfileModal(null);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                      <span>মূল্যায়ন সীট ও অভিভাবক স্লিপ</span>
+                    </button>
+                  </>
                 )}
                 {activeProfileModal.type === 'teacher' && onSelectTeacherForPrint && (
                   <button

@@ -15,14 +15,26 @@ import { fetchTeachersFromDb, saveTeacherToDb, deleteTeacherFromDb } from './ser
 import { useAuth } from './context/AuthContext';
 import { printViaIsolatedIframe } from './utils/pdfExport';
 import { StudentEvaluationSheet } from './components/StudentEvaluationSheet';
+import { AdminAnalyticsDashboard } from './components/AdminAnalyticsDashboard';
+import { DigitalLibrary } from './components/DigitalLibrary';
 
 const STORAGE_KEY_CURRENT = 'dlma_current_form_v1';
 const STORAGE_KEY_LIST = 'dlma_teachers_directory_v1';
 
 export default function App() {
   const { getToken } = useAuth();
-  // Default view is Home with inspirational radiance from DLMA logo
-  const [activeTab, setActiveTab] = useState<ActiveTab>('home');
+  const [initialLibraryClass] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'সকল শ্রেণি';
+    const params = new URLSearchParams(window.location.search);
+    return params.get('class') || 'সকল শ্রেণি';
+  });
+  // Default view is Home unless deep-linked via QR (?tab=library)
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
+    if (typeof window === 'undefined') return 'home';
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'library') return 'library';
+    return 'home';
+  });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   
@@ -294,7 +306,11 @@ export default function App() {
 
         {/* ৪। আজকের দুর্বল শিক্ষার্থী */}
         {activeTab === 'weak_students' && (
-          <ModulePlaceholder module="weak_students" title="৪। আজকের দুর্বল শিক্ষার্থী ট্র্যাকার" />
+          <ModulePlaceholder
+            module="weak_students"
+            title="৪। আজকের দুর্বল শিক্ষার্থী ট্র্যাকার"
+            onNavigateToAdmin={() => setActiveTab('admin_dashboard')}
+          />
         )}
 
         {/* ৫। প্রশ্ন মেকার */}
@@ -331,6 +347,31 @@ export default function App() {
               onClose={() => setActiveTab('admin_dashboard')}
             />
           </div>
+        )}
+
+        {/* ১০। এডমিন এনালিটিক্স ও চার্ট (Recharts) */}
+        {activeTab === 'analytics' && (
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6">
+            <AdminAnalyticsDashboard
+              students={(() => {
+                try {
+                  const s = localStorage.getItem('dlma_admin_students_v2');
+                  return s ? JSON.parse(s) : [];
+                } catch { return []; }
+              })()}
+              teachers={savedTeachers}
+              onOpenEvaluationSheet={() => setActiveTab('student_evaluation')}
+              onOpenPeriodicReportModal={() => setActiveTab('student_evaluation')}
+            />
+          </div>
+        )}
+
+        {/* ১১। ডিজিটাল লাইব্রেরী (পাঠ্যবই PDF, সিলেবাস, প্রশ্ন ব্যাংক, নোট, গাইড ও রেফারেন্স লিংক) */}
+        {activeTab === 'library' && (
+          <DigitalLibrary
+            defaultClass={initialLibraryClass}
+            onOpenAdminSyllabus={() => setActiveTab('admin_dashboard')}
+          />
         )}
 
         {/* প্রিভিউ ও ২ পাতা A4 প্রিন্ট */}

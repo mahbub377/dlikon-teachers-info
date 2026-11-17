@@ -142,6 +142,15 @@ export const InspirationalHome: React.FC<InspirationalHomeProps> = ({ onNavigate
           </button>
 
           <button
+            id="home-btn-library"
+            onClick={() => onNavigate('library')}
+            className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-indigo-700 hover:bg-indigo-600 text-white border border-indigo-400/40 font-semibold text-sm transition-all cursor-pointer shadow-md"
+          >
+            <BookOpen className="w-4 h-4 text-amber-300" />
+            ডিজিটাল লাইব্রেরী (বই ও প্রশ্ন ব্যাংক)
+          </button>
+
+          <button
             id="home-btn-weak-students"
             onClick={() => onNavigate('weak_students')}
             className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-amber-200 border border-amber-400/30 font-medium text-sm transition-all cursor-pointer hover:border-amber-400/60"

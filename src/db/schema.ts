@@ -30,9 +30,44 @@ export const teachers = pgTable('teachers', {
   updatedAt: timestamp('updated_at').defaultNow(),
 });
 
+// Define the 'library_resources' table for shared school-wide Digital Library metadata
+export const libraryResources = pgTable('library_resources', {
+  id: text('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id),
+  title: text('title').notNull(),
+  className: text('class_name').notNull(),
+  subject: text('subject').notNull(),
+  category: text('category').notNull(),
+  sourceType: text('source_type').notNull(), // 'pdf_upload' | 'external_url'
+  fileName: text('file_name'),
+  fileSize: integer('file_size'),
+  mimeType: text('mime_type'),
+  hasCloudFile: integer('has_cloud_file').default(0), // 1 if stored in library_files
+  url: text('url'),
+  academicYear: text('academic_year'),
+  termOrChapter: text('term_or_chapter'),
+  authorOrPublisher: text('author_or_publisher'),
+  description: text('description'),
+  uploadedBy: text('uploaded_by'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// Define the 'library_files' table for storing shared PDF binary/base64 payloads cleanly
+export const libraryFiles = pgTable('library_files', {
+  resourceId: text('resource_id')
+    .primaryKey()
+    .references(() => libraryResources.id, { onDelete: 'cascade' }),
+  fileDataBase64: text('file_data_base64').notNull(),
+  mimeType: text('mime_type').notNull(),
+  fileSize: integer('file_size').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 // Define relationships
 export const usersRelations = relations(users, ({ many }) => ({
   teachers: many(teachers),
+  libraryResources: many(libraryResources),
 }));
 
 export const teachersRelations = relations(teachers, ({ one }) => ({
@@ -41,3 +76,15 @@ export const teachersRelations = relations(teachers, ({ one }) => ({
     references: [users.id],
   }),
 }));
+
+export const libraryResourcesRelations = relations(libraryResources, ({ one }) => ({
+  author: one(users, {
+    fields: [libraryResources.userId],
+    references: [users.id],
+  }),
+  file: one(libraryFiles, {
+    fields: [libraryResources.id],
+    references: [libraryFiles.resourceId],
+  }),
+}));
+
